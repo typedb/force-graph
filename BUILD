@@ -42,7 +42,7 @@ exports_files([
 ])
 
 java_library(
-    name = "force-layout",
+    name = "force-graph",
     srcs = glob(["*.java"]),
     resources = ["LICENSE"],
     tags = ["maven_coordinates=com.vaticle:force-graph:{pom_version}"],
