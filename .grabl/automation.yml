@@ -1,0 +1,120 @@
+#
+# Copyright (C) 2021 Vaticle
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+config:
+  version-candidate: VERSION
+  dependencies:
+    dependencies: [build]
+
+build:
+  quality:
+    filter:
+      owner: vaticle
+      branch: master
+    build-analysis:
+      image: vaticle-ubuntu-20.04
+      command: |
+        SONARCLOUD_CODE_ANALYSIS_CREDENTIAL=$SONARCLOUD_CREDENTIAL \
+          bazel run @vaticle_dependencies//tool/sonarcloud:code-analysis -- \
+          --project-key=vaticle_force_layout \
+          --branch=$GRABL_BRANCH --commit-id=$GRABL_COMMIT
+    dependency-analysis:
+      image: vaticle-ubuntu-20.04
+      command: |
+        bazel run @vaticle_dependencies//factory/analysis:dependency-analysis
+  correctness:
+    build:
+      image: vaticle-ubuntu-20.04
+      command: |
+        export ARTIFACT_USERNAME=$REPO_VATICLE_USERNAME
+        export ARTIFACT_PASSWORD=$REPO_VATICLE_PASSWORD
+        bazel run @vaticle_dependencies//distribution/artifact:create-netrc
+        bazel build //...
+        bazel run @vaticle_dependencies//tool/checkstyle:test-coverage
+        bazel test $(bazel query 'kind(checkstyle_test, //...)') --test_output=errors
+    build-dependency:
+      image: vaticle-ubuntu-20.04
+      command: |
+        dependencies/maven/update.sh
+        git diff --exit-code dependencies/maven/artifacts.snapshot
+        bazel run @vaticle_dependencies//tool/unuseddeps:unused-deps -- list
+    test-integration:
+      image: vaticle-ubuntu-20.04
+      command: |
+        export ARTIFACT_USERNAME=$REPO_VATICLE_USERNAME
+        export ARTIFACT_PASSWORD=$REPO_VATICLE_PASSWORD
+        bazel run @vaticle_dependencies//distribution/artifact:create-netrc
+        bazel test //test/integration/... --test_output=errors
+    deploy-maven-snapshot:
+      image: vaticle-ubuntu-20.04
+      dependencies: [
+        build, build-dependency,
+        test-behaviour-connection-core, test-behaviour-connection-cluster,
+        test-behaviour-concept-core, test-behaviour-concept-cluster,
+        test-behaviour-match-core, test-behaviour-match-cluster,
+        test-behaviour-writable-core, test-behaviour-writable-cluster,
+        test-behaviour-definable-core, test-behaviour-definable-cluster
+      ]
+      filter:
+        owner: vaticle
+        branch: master
+      command: |
+        export DEPLOY_MAVEN_USERNAME=$REPO_VATICLE_USERNAME
+        export DEPLOY_MAVEN_PASSWORD=$REPO_VATICLE_PASSWORD
+        bazel run --define version=$(git rev-parse HEAD) //:deploy-maven -- snapshot
+    test-deployment-maven:
+      image: vaticle-ubuntu-20.04
+      dependencies: [deploy-maven-snapshot]
+      filter:
+        owner: vaticle
+        branch: master
+      command: |
+        bazel run //test:typedb-extractor-linux -- dist/typedb-all-linux
+        ./dist/typedb-all-linux/typedb server &
+        sed -i -e "s/CLIENT_JAVA_VERSION_MARKER/$GRABL_COMMIT/g" test/deployment/pom.xml
+        cat test/deployment/pom.xml
+        cd test/deployment && mvn test
+
+release:
+  filter:
+    owner: vaticle
+    branch: master
+  validation:
+    validate-dependencies:
+      image: vaticle-ubuntu-20.04
+      command: bazel test //:release-validate-deps --test_output=streamed
+  deployment:
+    deploy-github:
+      image: vaticle-ubuntu-20.04
+      command: |
+        pyenv install -s 3.6.10
+        pyenv global 3.6.10 system
+        pip3 install certifi
+        export RELEASE_NOTES_TOKEN=$REPO_GITHUB_TOKEN
+        bazel run @vaticle_dependencies//tool/release:create-notes -- force-layout $(cat VERSION) ./RELEASE_TEMPLATE.md
+        export DEPLOY_GITHUB_TOKEN=$REPO_GITHUB_TOKEN
+        bazel run --define version=$(cat VERSION) //:deploy-github -- $GRABL_COMMIT
+    deploy-maven-release:
+      image: vaticle-ubuntu-20.04
+      dependencies: [deploy-github]
+      command: |
+        export DEPLOY_MAVEN_USERNAME=$REPO_VATICLE_USERNAME
+        export DEPLOY_MAVEN_PASSWORD=$REPO_VATICLE_PASSWORD
+        bazel run --define version=$(cat VERSION) //:deploy-maven -- release
