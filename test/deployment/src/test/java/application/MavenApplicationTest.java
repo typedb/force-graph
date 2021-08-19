@@ -29,17 +29,7 @@ public class MavenApplicationTest {
 
     @Test
     public void test() {
-        ForceSimulation simulation = new ForceSimulation(new SimulationObserver() {
-            @Override
-            public void onTick(ForceSimulation simulation) {
-                System.out.println("ticked");
-            }
-
-            @Override
-            public void onEnd(ForceSimulation simulation) {
-                System.out.println("ended");
-            }
-        });
+        ForceSimulation simulation = new ForceSimulation();
         System.out.println(simulation);
     }
 }

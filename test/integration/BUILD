@@ -27,7 +27,7 @@ java_test(
     test_class = "com.vaticle.force.graph.test.integration.ForceGraphTest",
     deps = [
         # Internal dependencies
-        "//:force-layout",
+        "//:force-graph",
 
         # External dependencies from Maven
         "@maven//:org_hamcrest_hamcrest_library",

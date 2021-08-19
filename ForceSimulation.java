@@ -32,7 +32,6 @@ import static java.util.Objects.requireNonNull;
 
 public class ForceSimulation {
 
-    private final SimulationObserver eventObserver;
     private double alpha;
     private double alphaMin;
     private double alphaDecay;
@@ -40,17 +39,11 @@ public class ForceSimulation {
     private double velocityDecay;
     private final Map<String, Force> forces;
     private final ConcurrentMap<Integer, Node> nodes;
-    private volatile boolean isRunning;
 
     private static final int INITIAL_RADIUS = 10;
     private static final double INITIAL_ANGLE = Math.PI * (3 - Math.sqrt(5));
 
     public ForceSimulation() {
-        this(null);
-    }
-
-    public ForceSimulation(SimulationObserver eventObserver) {
-        this.eventObserver = eventObserver;
         alpha = 1;
         alphaMin = 0.001;
         alphaDecay = 1 - Math.pow(alphaMin, 1.0 / 300);
@@ -58,24 +51,9 @@ public class ForceSimulation {
         velocityDecay = 0.6;
         forces = new HashMap<>();
         nodes = new ConcurrentHashMap<>();
-        isRunning = false;
     }
 
-    public void start() {
-        isRunning = true;
-        while (alpha >= alphaMin) {
-            if (!isRunning) break;
-            tick();
-            if (eventObserver != null) eventObserver.onTick(this);
-        }
-        if (eventObserver != null) eventObserver.onEnd(this);
-    }
-
-    public void stop() {
-        isRunning = false;
-    }
-
-    public void tick() {
+    public synchronized void tick() {
         alpha += (alphaTarget - alpha) * alphaDecay;
 
         forces.values().forEach(force -> force.apply(alpha));
@@ -166,13 +144,18 @@ public class ForceSimulation {
     }
 
     public ForceSimulation force(String name, Force force) {
-        forces.put(requireNonNull(name), requireNonNull(force));
-        force.init();
+        if (force != null) {
+            forces.put(requireNonNull(name), force);
+            force.init();
+        } else {
+            forces.remove(name);
+        }
         return this;
     }
 
-    public void removeForce(String name) {
-        forces.remove(name);
+    public synchronized void clear() {
+        forces.clear();
+        nodes.clear();
     }
 
     public static class InputNode {
