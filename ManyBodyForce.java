@@ -17,10 +17,14 @@ public class ManyBodyForce extends BaseForce {
     Random random;
 
     public ManyBodyForce(Collection<Node> nodes, double strength) {
+        this(nodes, strength, Math.sqrt(Double.MAX_VALUE));
+    }
+
+    public ManyBodyForce(Collection<Node> nodes, double strength, double distanceMax) {
         super(nodes);
         this.strength = strength;
         this.distanceMin2 = 1.0;
-        this.distanceMax2 = Double.MAX_VALUE;
+        this.distanceMax2 = distanceMax * distanceMax;
         this.theta2 = 0.81;
     }
 

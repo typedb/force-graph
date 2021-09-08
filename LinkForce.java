@@ -11,7 +11,7 @@ import static com.vaticle.force.graph.RandomEffects.jiggle;
 public class LinkForce extends BaseForce {
 
     final Collection<Link> links;
-    final Function<Link, Double> strength;
+    final double baseStrength;
     double distance;
     Map<Node, Integer> count;
     Map<Link, Double> bias;
@@ -19,9 +19,13 @@ public class LinkForce extends BaseForce {
     Random random;
 
     public LinkForce(Collection<Node> nodes, Collection<Link> links, double distance) {
+        this(nodes, links, distance, 1.0);
+    }
+
+    public LinkForce(Collection<Node> nodes, Collection<Link> links, double distance, double strength) {
         super(nodes);
         this.links = links;
-        this.strength = (link) -> 1.0 / Math.min(count.get(link.source()), count.get(link.target()));
+        this.baseStrength = strength;
         this.distance = distance;
     }
 
@@ -49,7 +53,7 @@ public class LinkForce extends BaseForce {
     protected void initStrength() {
         strengths = new HashMap<>();
         for (Link link : links) {
-            strengths.put(link, 1.0 / Math.min(count.get(link.source()), count.get(link.target())));
+            strengths.put(link, baseStrength / Math.min(count.get(link.source()), count.get(link.target())));
         }
     }
 

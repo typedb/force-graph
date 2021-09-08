@@ -72,7 +72,7 @@ public class ForceSimulation {
         }
     }
 
-    public void addNodes(Collection<InputNode> inputNodes) {
+    public synchronized void addNodes(Collection<InputNode> inputNodes) {
         inputNodes.forEach(this::placeNode);
         forces.values().forEach(Force::init);
     }
