@@ -11,11 +11,11 @@ public class Node implements Location2D {
     private boolean isXFixed;
     private boolean isYFixed;
 
-    Node(int index, double x, double y) {
+    public Node(int index, double x, double y) {
         this(index, x, y, false, false);
     }
 
-    Node(int index, double x, double y, boolean isXFixed, boolean isYFixed) {
+    public Node(int index, double x, double y, boolean isXFixed, boolean isYFixed) {
         this.index = index;
         this.x = x;
         this.y = y;

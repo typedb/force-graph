@@ -1,10 +1,13 @@
 package com.vaticle.force.graph;
 
 import java.util.Collection;
+import java.util.function.Supplier;
+
+import static com.vaticle.force.graph.StandardFunctions.constant;
 
 public class YForce extends BaseForce {
 
-    double y;
+    Supplier<Double> y;
     double strength;
 
     public YForce(Collection<Node> nodes, double y) {
@@ -12,6 +15,10 @@ public class YForce extends BaseForce {
     }
 
     public YForce(Collection<Node> nodes, double y, double strength) {
+        this(nodes, constant(y), strength);
+    }
+
+    public YForce(Collection<Node> nodes, Supplier<Double> y, double strength) {
         super(nodes);
         this.y = y;
         this.strength = strength;
@@ -24,7 +31,7 @@ public class YForce extends BaseForce {
     @Override
     public void apply(double alpha) {
         for (Node node : nodes()) {
-            node.vy += (y - node.y()) * strength * alpha;
+            node.vy += (y.get() - node.y()) * strength * alpha;
         }
     }
 }

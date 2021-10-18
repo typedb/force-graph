@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
@@ -72,14 +74,15 @@ public class ForceSimulation {
         }
     }
 
-    public synchronized void addNodes(Collection<InputNode> inputNodes) {
-        inputNodes.forEach(this::placeNode);
+    public synchronized Collection<Node> addNodes(Collection<InputNode> inputNodes) {
+        final Stream<Node> nodeStream = inputNodes.stream().map(this::placeNode);
         forces.values().forEach(Force::init);
+        return nodeStream.collect(Collectors.toList());
     }
 
-    protected void placeNode(InputNode inputNode) {
+    protected Node placeNode(InputNode inputNode) {
         AtomicBoolean added = new AtomicBoolean(false);
-        nodes.computeIfAbsent(inputNode.id, (id) -> {
+        final Node node = nodes.computeIfAbsent(inputNode.id, (id) -> {
             added.set(true);
             double radius = INITIAL_RADIUS * Math.sqrt(0.5 + inputNode.id);
             double angle = inputNode.id * INITIAL_ANGLE;
@@ -88,6 +91,7 @@ public class ForceSimulation {
             return new Node(id, x, y, inputNode.fixedX != null, inputNode.fixedY != null);
         });
         if (!added.get()) throw new IllegalStateException("The node ID " + inputNode.id + " is already contained in the force simulation, so it cannot be added.");
+        return node;
     }
 
     public ConcurrentMap<Integer, Node> nodes() {
