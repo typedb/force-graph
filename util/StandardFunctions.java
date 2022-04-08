@@ -1,4 +1,4 @@
-package com.vaticle.force.graph.force;
+package com.vaticle.force.graph.util;
 
 import java.util.function.Supplier;
 

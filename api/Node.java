@@ -1,4 +1,4 @@
-package com.vaticle.force.graph.force;
+package com.vaticle.force.graph.api;
 
 public interface Node {
     boolean isXFixed();

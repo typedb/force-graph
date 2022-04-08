@@ -1,5 +1,6 @@
 package com.vaticle.force.graph.force;
 
+import com.vaticle.force.graph.api.Node;
 import com.vaticle.force.graph.quadtree.Quadtree;
 
 import java.util.Collection;
@@ -8,7 +9,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.function.Function;
 
-import static com.vaticle.force.graph.force.RandomEffects.jiggle;
+import static com.vaticle.force.graph.util.RandomEffects.jiggle;
 
 public class CollideForce extends BaseForce {
 

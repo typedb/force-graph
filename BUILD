@@ -24,8 +24,12 @@ package(default_visibility = ["//visibility:public"])
 java_library(
     name = "force_graph",
     srcs = glob([
+        "*.java",
+        "api/*.java",
         "force/**/*.java",
+        "impl/*.java",
         "quadtree/*.java",
+        "util/*.java",
     ]),
     resources = ["LICENSE"],
     tags = ["maven_coordinates=com.vaticle:force-graph:{pom_version}"],

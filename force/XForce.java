@@ -1,9 +1,11 @@
 package com.vaticle.force.graph.force;
 
+import com.vaticle.force.graph.api.Node;
+
 import java.util.Collection;
 import java.util.function.Supplier;
 
-import static com.vaticle.force.graph.force.StandardFunctions.constant;
+import static com.vaticle.force.graph.util.StandardFunctions.constant;
 
 public class XForce extends BaseForce {
     double strength;

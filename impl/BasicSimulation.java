@@ -19,9 +19,11 @@
  * under the License.
  */
 
-package com.vaticle.force.graph.force;
+package com.vaticle.force.graph.impl;
 
-import com.vaticle.force.graph.force.impl.BasicNode;
+import com.vaticle.force.graph.api.Node;
+import com.vaticle.force.graph.api.Simulation;
+import com.vaticle.force.graph.force.Force;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -34,7 +36,7 @@ import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
-public class ForceSimulation {
+public class BasicSimulation implements Simulation {
     private double alpha;
     private double alphaMin;
     private double alphaDecay;
@@ -46,7 +48,7 @@ public class ForceSimulation {
     private static final int INITIAL_RADIUS = 10;
     private static final double INITIAL_ANGLE = Math.PI * (3 - Math.sqrt(5));
 
-    public ForceSimulation() {
+    public BasicSimulation() {
         alpha = 1;
         alphaMin = 0.001;
         alphaDecay = 1 - Math.pow(alphaMin, 1.0 / 300);
@@ -56,6 +58,7 @@ public class ForceSimulation {
         nodes = new ConcurrentHashMap<>();
     }
 
+    @Override
     public synchronized void tick() {
         alpha += (alphaTarget - alpha) * alphaDecay;
 
@@ -103,7 +106,7 @@ public class ForceSimulation {
         return alpha;
     }
 
-    public ForceSimulation alpha(double value) {
+    public BasicSimulation alpha(double value) {
         alpha = value;
         return this;
     }
@@ -112,7 +115,7 @@ public class ForceSimulation {
         return alphaMin;
     }
 
-    public ForceSimulation alphaMin(double value) {
+    public BasicSimulation alphaMin(double value) {
         alphaMin = value;
         return this;
     }
@@ -121,7 +124,7 @@ public class ForceSimulation {
         return alphaDecay;
     }
 
-    public ForceSimulation alphaDecay(double value) {
+    public BasicSimulation alphaDecay(double value) {
         alphaDecay = value;
         return this;
     }
@@ -130,7 +133,7 @@ public class ForceSimulation {
         return alphaTarget;
     }
 
-    public ForceSimulation alphaTarget(double value) {
+    public BasicSimulation alphaTarget(double value) {
         alphaTarget = value;
         return this;
     }
@@ -139,7 +142,7 @@ public class ForceSimulation {
         return velocityDecay;
     }
 
-    public ForceSimulation velocityDecay(double value) {
+    public BasicSimulation velocityDecay(double value) {
         velocityDecay = value;
         return this;
     }
@@ -148,7 +151,7 @@ public class ForceSimulation {
         return forces.get(name);
     }
 
-    public ForceSimulation force(String name, Force force) {
+    public BasicSimulation force(String name, Force force) {
         if (force != null) {
             forces.put(requireNonNull(name), force);
             force.init();

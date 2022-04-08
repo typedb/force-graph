@@ -1,7 +1,7 @@
-package com.vaticle.force.graph.force.impl;
+package com.vaticle.force.graph.impl;
 
-import com.vaticle.force.graph.force.Link;
-import com.vaticle.force.graph.force.Node;
+import com.vaticle.force.graph.api.Link;
+import com.vaticle.force.graph.api.Node;
 
 public class BasicLink implements Link {
     private final Node source;

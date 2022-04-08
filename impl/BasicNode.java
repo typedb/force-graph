@@ -1,6 +1,6 @@
-package com.vaticle.force.graph.force.impl;
+package com.vaticle.force.graph.impl;
 
-import com.vaticle.force.graph.force.Node;
+import com.vaticle.force.graph.api.Node;
 
 public class BasicNode implements Node {
     private final int index;
