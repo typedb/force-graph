@@ -22,10 +22,6 @@ public class CenterForce extends BaseForce {
     }
 
     @Override
-    public void init() {
-    }
-
-    @Override
     public void apply(double alpha) {
         double sx = 0, sy = 0;
         for (Node node : nodes()) {

@@ -20,7 +20,4 @@ public interface Node {
     double vy();
 
     void vy(double value);
-
-    // TODO: refactor to ID and document why (D3.js relies on dynamic typing to add 'index' to nodes, but we can't)
-    int index();
 }

@@ -28,32 +28,25 @@ public class LinkForce extends BaseForce {
         this.links = links;
         this.baseStrength = strength;
         this.distance = distance;
+        random = new Random();
     }
 
     @Override
-    public void init() {
+    public void onNodesChanged() {
+        count = new HashMap<>();
+        bias = new HashMap<>();
+        strengths = new HashMap<>();
+
         if (nodes().isEmpty()) return;
 
-        count = new HashMap<>();
         for (Link link : links) {
             count.putIfAbsent(link.source(), 0);
             count.put(link.source(), count.get(link.source()) + 1);
             count.putIfAbsent(link.target(), 0);
             count.put(link.target(), count.get(link.target()) + 1);
-        }
 
-        bias = new HashMap<>();
-        for (Link link : links) {
             bias.put(link, (double) count.get(link.source()) / (count.get(link.source()) + count.get(link.target())));
-        }
 
-        initStrength();
-        random = new Random();
-    }
-
-    protected void initStrength() {
-        strengths = new HashMap<>();
-        for (Link link : links) {
             strengths.put(link, baseStrength / Math.min(count.get(link.source()), count.get(link.target())));
         }
     }

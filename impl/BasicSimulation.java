@@ -23,18 +23,17 @@ package com.vaticle.force.graph.impl;
 
 import com.vaticle.force.graph.api.Node;
 import com.vaticle.force.graph.api.Simulation;
-import com.vaticle.force.graph.force.Force;
+import com.vaticle.force.graph.api.Force;
+import com.vaticle.force.graph.force.CollideForce;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toMap;
 
 public class BasicSimulation implements Simulation {
     private double alpha;
@@ -42,8 +41,9 @@ public class BasicSimulation implements Simulation {
     private double alphaDecay;
     private double alphaTarget;
     private double velocityDecay;
-    private final Map<String, Force> forces;
-    private final ConcurrentMap<Integer, Node> nodes;
+    private final Collection<Force> forces;
+    private final ConcurrentMap<Node, Integer> nodesIndexed;
+    private final AtomicInteger nextNodeID;
 
     private static final int INITIAL_RADIUS = 10;
     private static final double INITIAL_ANGLE = Math.PI * (3 - Math.sqrt(5));
@@ -54,17 +54,18 @@ public class BasicSimulation implements Simulation {
         alphaDecay = 1 - Math.pow(alphaMin, 1.0 / 300);
         alphaTarget = 0;
         velocityDecay = 0.6;
-        forces = new HashMap<>();
-        nodes = new ConcurrentHashMap<>();
+        forces = new ArrayList<>();
+        nodesIndexed = new ConcurrentHashMap<>();
+        nextNodeID = new AtomicInteger();
     }
 
     @Override
     public synchronized void tick() {
         alpha += (alphaTarget - alpha) * alphaDecay;
 
-        forces.values().forEach(force -> force.apply(alpha));
+        forces.forEach(force -> force.apply(alpha));
 
-        for (Node node : nodes.values()) {
+        for (Node node : nodes()) {
             if (node.isXFixed()) node.vx(0);
             else {
                 node.vx(node.vx() * velocityDecay);
@@ -78,28 +79,23 @@ public class BasicSimulation implements Simulation {
         }
     }
 
-    public synchronized Collection<Node> addNodes(Collection<InputNode> inputNodes) {
-        final Stream<Node> nodeStream = inputNodes.stream().map(this::placeNode);
-        forces.values().forEach(Force::init);
-        return nodeStream.collect(Collectors.toList());
+    // TODO: I think we can get rid of 'synchronized' here since we're using ConcurrentHashMap
+    public synchronized void placeNodes(Collection<Node> nodes) {
+        nodes.forEach(this::placeNode);
+        forces.forEach(Force::onNodesChanged);
     }
 
-    protected Node placeNode(InputNode inputNode) {
-        AtomicBoolean added = new AtomicBoolean(false);
-        final Node node = nodes.computeIfAbsent(inputNode.id, (id) -> {
-            added.set(true);
-            double radius = INITIAL_RADIUS * Math.sqrt(0.5 + inputNode.id);
-            double angle = inputNode.id * INITIAL_ANGLE;
-            double x = inputNode.fixedX != null ? inputNode.fixedX : radius * Math.cos(angle);
-            double y = inputNode.fixedY != null ? inputNode.fixedY : radius * Math.sin(angle);
-            return new BasicNode(id, x, y, inputNode.fixedX != null, inputNode.fixedY != null);
-        });
-        if (!added.get()) throw new IllegalStateException("The node ID " + inputNode.id + " is already contained in the force simulation, so it cannot be added.");
-        return node;
+    protected void placeNode(Node node) {
+        int id = nextNodeID.getAndIncrement();
+        double radius = INITIAL_RADIUS * Math.sqrt(0.5 + id);
+        double angle = id * INITIAL_ANGLE;
+        node.x(node.x() + (node.isXFixed() ? 0 : radius * Math.cos(angle)));
+        node.y(node.y() + (node.isYFixed() ? 0 : radius * Math.sin(angle)));
+        nodesIndexed.put(node, id);
     }
 
-    public ConcurrentMap<Integer, Node> nodes() {
-        return nodes;
+    public Collection<Node> nodes() {
+        return nodesIndexed.keySet();
     }
 
     public double alpha() {
@@ -147,39 +143,24 @@ public class BasicSimulation implements Simulation {
         return this;
     }
 
-    public Force force(String name) {
-        return forces.get(name);
+    @Override
+    public void addForce(Force force) {
+        forces.add(requireNonNull(force));
+        force.onNodesChanged();
     }
 
-    public BasicSimulation force(String name, Force force) {
-        if (force != null) {
-            forces.put(requireNonNull(name), force);
-            force.init();
-        } else {
-            forces.remove(name);
-        }
-        return this;
+    @Override
+    public boolean removeForce(Force force) {
+        return forces.remove(force);
+    }
+
+    public void addCollideForce(Collection<Node> nodes, double radius) {
+        forces.add(new CollideForce<>(nodes.stream().collect(toMap(x -> x, nodesIndexed::get)), radius));
     }
 
     public synchronized void clear() {
         forces.clear();
-        nodes.clear();
-    }
-
-    // TODO: dissolve this class, caller to provide Node instead
-    public static class InputNode {
-        final int id;
-        final Double fixedX;
-        final Double fixedY;
-
-        public InputNode(int id) {
-            this(id, null, null);
-        }
-
-        public InputNode(int id, Double fixedX, Double fixedY) {
-            this.id = id;
-            this.fixedX = fixedX;
-            this.fixedY = fixedY;
-        }
+        nodesIndexed.clear();
+        nextNodeID.set(0);
     }
 }

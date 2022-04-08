@@ -26,10 +26,6 @@ public class XForce extends BaseForce {
     }
 
     @Override
-    public void init() {
-    }
-
-    @Override
     public void apply(double alpha) {
         for (Node node : nodes()) {
             node.vx(node.vx() + (x.get() - node.x()) * strength * alpha);

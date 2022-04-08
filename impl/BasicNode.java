@@ -70,9 +70,4 @@ public class BasicNode implements Node {
     public void vy(double value) {
         vy = value;
     }
-
-    @Override
-    public int index() {
-        return this.index;
-    }
 }

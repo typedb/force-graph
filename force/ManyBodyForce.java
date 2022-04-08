@@ -28,10 +28,6 @@ public class ManyBodyForce extends BaseForce {
         this.distanceMin2 = 1.0;
         this.distanceMax2 = distanceMax * distanceMax;
         this.theta2 = 0.81;
-    }
-
-    @Override
-    public void init() {
         random = new Random();
     }
 
