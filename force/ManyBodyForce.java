@@ -63,8 +63,8 @@ public class ManyBodyForce extends BaseForce {
                             len += y*y;
                         }
                         if (len < distanceMin2) len = Math.sqrt(distanceMin2 * len);
-                        node.vx += x * q.value * alpha / len;
-                        node.vy += y * q.value * alpha / len;
+                        node.vx(node.vx() + x * q.value * alpha / len);
+                        node.vy(node.vy() + y * q.value * alpha / len);
                     }
                     return true;
                 }
@@ -89,8 +89,8 @@ public class ManyBodyForce extends BaseForce {
                 do {
                     if (!quad.node.data.equals(node)) {
                         double u = strength * alpha / len;
-                        node.vx += x * u;
-                        node.vy += y * u;
+                        node.vx(node.vx() + x * u);
+                        node.vy(node.vy() + y * u);
                     }
                     n = n.next;
                 } while (n != null);

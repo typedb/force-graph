@@ -1,19 +1,7 @@
 package com.vaticle.force.graph.force;
 
-public class Link {
-    private final Node source;
-    private final Node target;
+public interface Link {
+    Node source();
 
-    public Link(Node source, Node target) {
-        this.source = source;
-        this.target = target;
-    }
-
-    public Node source() {
-        return source;
-    }
-
-    public Node target() {
-        return target;
-    }
+    Node target();
 }

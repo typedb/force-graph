@@ -21,6 +21,8 @@
 
 package com.vaticle.force.graph.force;
 
+import com.vaticle.force.graph.force.impl.BasicNode;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,15 +62,15 @@ public class ForceSimulation {
         forces.values().forEach(force -> force.apply(alpha));
 
         for (Node node : nodes.values()) {
-            if (node.isXFixed()) node.vx = 0;
+            if (node.isXFixed()) node.vx(0);
             else {
-                node.vx *= velocityDecay;
-                node.x(node.x() + node.vx);
+                node.vx(node.vx() * velocityDecay);
+                node.x(node.x() + node.vx());
             }
-            if (node.isYFixed()) node.vy = 0;
+            if (node.isYFixed()) node.vy(0);
             else {
-                node.vy *= velocityDecay;
-                node.y(node.y() + node.vy);
+                node.vy(node.vy() * velocityDecay);
+                node.y(node.y() + node.vy());
             }
         }
     }
@@ -87,7 +89,7 @@ public class ForceSimulation {
             double angle = inputNode.id * INITIAL_ANGLE;
             double x = inputNode.fixedX != null ? inputNode.fixedX : radius * Math.cos(angle);
             double y = inputNode.fixedY != null ? inputNode.fixedY : radius * Math.sin(angle);
-            return new Node(id, x, y, inputNode.fixedX != null, inputNode.fixedY != null);
+            return new BasicNode(id, x, y, inputNode.fixedX != null, inputNode.fixedY != null);
         });
         if (!added.get()) throw new IllegalStateException("The node ID " + inputNode.id + " is already contained in the force simulation, so it cannot be added.");
         return node;
@@ -161,6 +163,7 @@ public class ForceSimulation {
         nodes.clear();
     }
 
+    // TODO: dissolve this class, caller to provide Node instead
     public static class InputNode {
         final int id;
         final Double fixedX;
@@ -174,16 +177,6 @@ public class ForceSimulation {
             this.id = id;
             this.fixedX = fixedX;
             this.fixedY = fixedY;
-        }
-    }
-
-    public static class InputLink {
-        final int source;
-        final int target;
-
-        public InputLink(int source, int target) {
-            this.source = source;
-            this.target = target;
         }
     }
 }

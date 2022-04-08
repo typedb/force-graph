@@ -1,55 +1,26 @@
 package com.vaticle.force.graph.force;
 
-public class Node implements Location2D {
-    private final int index;
-    private double x;
-    private double y;
-    public double vx;
-    public double vy;
+public interface Node {
+    boolean isXFixed();
 
-    private boolean isXFixed;
-    private boolean isYFixed;
+    boolean isYFixed();
 
-    public Node(int index, double x, double y) {
-        this(index, x, y, false, false);
-    }
+    double x();
 
-    public Node(int index, double x, double y, boolean isXFixed, boolean isYFixed) {
-        this.index = index;
-        this.x = x;
-        this.y = y;
-        this.isXFixed = isXFixed;
-        this.isYFixed = isYFixed;
-        this.vx = this.vy = 0;
-    }
+    void x(double value);
 
-    public boolean isXFixed() { return isXFixed; }
+    double y();
 
-    public void setXFixed(boolean value) { isXFixed = value; }
+    void y(double value);
 
-    public boolean isYFixed() { return isYFixed; }
+    double vx();
 
-    public void setYFixed(boolean value) { isYFixed = value; }
+    void vx(double value);
 
-    @Override
-    public double x() {
-        return this.x;
-    }
+    double vy();
 
-    @Override
-    public double y() {
-        return this.y;
-    }
+    void vy(double value);
 
-    public int index() {
-        return this.index;
-    }
-
-    public void x(double value) {
-        this.x = value;
-    }
-
-    public void y(double value) {
-        this.y = value;
-    }
+    // TODO: refactor to ID and document why (D3.js relies on dynamic typing to add 'index' to nodes, but we can't)
+    int index();
 }

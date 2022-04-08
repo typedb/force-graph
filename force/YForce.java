@@ -30,7 +30,7 @@ public class YForce extends BaseForce {
     @Override
     public void apply(double alpha) {
         for (Node node : nodes()) {
-            node.vy += (y.get() - node.y()) * strength * alpha;
+            node.vy(node.vy() + (y.get() - node.y()) * strength * alpha);
         }
     }
 }

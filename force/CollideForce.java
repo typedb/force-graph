@@ -27,8 +27,8 @@ public class CollideForce extends BaseForce {
         super(nodes);
         this.radius = radius;
         this.strength = strength;
-        x = node -> node.x() + node.vx;
-        y = node -> node.y() + node.vy;
+        x = node -> node.x() + node.vx();
+        y = node -> node.y() + node.vy();
     }
 
     @Override
@@ -44,16 +44,16 @@ public class CollideForce extends BaseForce {
 
         for (Node node : nodes()) {
             double ri = radius; double ri2 = ri * ri;
-            double xi = node.x() + node.vx;
-            double yi = node.y() + node.vy;
+            double xi = node.x() + node.vx();
+            double yi = node.y() + node.vy();
             tree.visit(quad -> {
                 Node data = quad.node.data;
                 double rj = quadRadii.get(quad.node);
                 double r = ri + rj;
                 if (data != null) {
                     if (data.index() > node.index()) {
-                        double x = xi - data.x() - data.vx;
-                        double y = yi - data.y() - data.vy;
+                        double x = xi - data.x() - data.vx();
+                        double y = yi - data.y() - data.vy();
                         double len = x*x + y*y;
                         if (len < r*r) {
                             if (x == 0) {
@@ -68,11 +68,11 @@ public class CollideForce extends BaseForce {
                             len = (r - len) / len * strength;
                             x *= len; y *= len; rj *= rj;
                             r = rj / (ri2 + rj);
-                            node.vx += x * r;
-                            node.vy += y * r;
+                            node.vx(node.vx() + x * r);
+                            node.vy(node.vy() + y * r);
                             r = 1 - r;
-                            data.vx -= x * r;
-                            data.vy -= y * r;
+                            data.vx(data.vx() - x * r);
+                            data.vy(data.vy() - y * r);
                         }
                     }
                     return false;

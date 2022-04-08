@@ -199,7 +199,7 @@ public class Quadtree<DATA> {
     public class Node {
         public DATA data;
         public Map<Integer, Node> children; // map representation of sparse array
-        Node next;
+        public Node next;
 
         Node() {
             this(null);

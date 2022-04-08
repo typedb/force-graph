@@ -58,17 +58,19 @@ public class LinkForce extends BaseForce {
     @Override
     public void apply(double alpha) {
         for (Link link : links) {
-            double deltaX = link.target().x() + link.target().vx - link.source().x() - link.source().vx;
+            double deltaX = link.target().x() + link.target().vx() - link.source().x() - link.source().vx();
             double x = deltaX != 0 ? deltaX : jiggle(random::nextDouble);
-            double deltaY = link.target().y() + link.target().vy - link.source().y() - link.source().vy;
+            double deltaY = link.target().y() + link.target().vy() - link.source().y() - link.source().vy();
             double y = deltaY != 0 ? deltaY : jiggle(random::nextDouble);
             double length = Math.sqrt(x*x + y*y);
             double l = (length - distance) / length * alpha * strengths.get(link);
             x *= l; y *= l;
             double targetBias = bias.get(link);
             double sourceBias = 1 - targetBias;
-            link.target().vx -= x * targetBias; link.target().vy -= y * targetBias;
-            link.source().vx += x * sourceBias; link.source().vy += y * sourceBias;
+            link.target().vx(link.target().vx() - x * targetBias);
+            link.target().vy(link.target().vy() - y * targetBias);
+            link.source().vx(link.source().vx() + x * sourceBias);
+            link.source().vy(link.source().vy() + y * sourceBias);
         }
     }
 }
