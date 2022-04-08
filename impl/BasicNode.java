@@ -3,7 +3,6 @@ package com.vaticle.force.graph.impl;
 import com.vaticle.force.graph.api.Node;
 
 public class BasicNode implements Node {
-    private final int index;
     private double x;
     private double y;
     public double vx;
@@ -12,12 +11,11 @@ public class BasicNode implements Node {
     private final boolean isXFixed;
     private final boolean isYFixed;
 
-    public BasicNode(int index, double x, double y) {
-        this(index, x, y, false, false);
+    public BasicNode(double x, double y) {
+        this(x, y, false, false);
     }
 
-    public BasicNode(int index, double x, double y, boolean isXFixed, boolean isYFixed) {
-        this.index = index;
+    public BasicNode(double x, double y, boolean isXFixed, boolean isYFixed) {
         this.x = x;
         this.y = y;
         this.isXFixed = isXFixed;
