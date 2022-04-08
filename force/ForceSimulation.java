@@ -19,7 +19,7 @@
  * under the License.
  */
 
-package com.vaticle.force.graph;
+package com.vaticle.force.graph.force;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -33,7 +33,6 @@ import java.util.stream.Stream;
 import static java.util.Objects.requireNonNull;
 
 public class ForceSimulation {
-
     private double alpha;
     private double alphaMin;
     private double alphaDecay;

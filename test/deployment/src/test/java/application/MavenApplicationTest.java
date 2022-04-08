@@ -21,7 +21,7 @@
 
 package application;
 
-import com.vaticle.force.graph.ForceSimulation;
+import com.vaticle.force.graph.force.ForceSimulation;
 import com.vaticle.force.graph.SimulationObserver;
 import org.junit.Test;
 

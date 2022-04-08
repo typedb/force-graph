@@ -1,14 +1,15 @@
-package com.vaticle.force.graph;
+package com.vaticle.force.graph.force;
+
+import com.vaticle.force.graph.quadtree.Quadtree;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-import static com.vaticle.force.graph.RandomEffects.jiggle;
+import static com.vaticle.force.graph.force.RandomEffects.jiggle;
 
 public class ManyBodyForce extends BaseForce {
-
     double strength;
     double distanceMin2;
     double distanceMax2;

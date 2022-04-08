@@ -1,4 +1,4 @@
-package com.vaticle.force.graph;
+package com.vaticle.force.graph.quadtree;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -8,7 +8,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class Quadtree<DATA> {
-
     final Function<DATA, Double> x;
     final Function<DATA, Double> y;
     double x0;
@@ -197,10 +196,9 @@ public class Quadtree<DATA> {
         }
     }
 
-    class Node {
-
-        DATA data;
-        Map<Integer, Node> children; // map representation of sparse array
+    public class Node {
+        public DATA data;
+        public Map<Integer, Node> children; // map representation of sparse array
         Node next;
 
         Node() {
@@ -213,13 +211,12 @@ public class Quadtree<DATA> {
         }
     }
 
-    class Quad {
-
-        final Node node;
-        final double x0;
-        final double y0;
-        final double x1;
-        final double y1;
+    public class Quad {
+        public final Node node;
+        public final double x0;
+        public final double y0;
+        public final double x1;
+        public final double y1;
 
         Quad(Node node, double x0, double y0, double x1, double y1) {
             this.node = node;

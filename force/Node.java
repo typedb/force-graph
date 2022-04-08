@@ -1,7 +1,6 @@
-package com.vaticle.force.graph;
+package com.vaticle.force.graph.force;
 
 public class Node implements Location2D {
-
     private final int index;
     private double x;
     private double y;

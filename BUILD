@@ -43,7 +43,10 @@ exports_files([
 
 java_library(
     name = "force-graph",
-    srcs = glob(["*.java"]),
+    srcs = glob([
+        "force/*.java",
+        "quadtree/*.java",
+    ]),
     resources = ["LICENSE"],
     tags = ["maven_coordinates=com.vaticle:force-graph:{pom_version}"],
     deps = [],

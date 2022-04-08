@@ -1,7 +1,6 @@
-package com.vaticle.force.graph;
+package com.vaticle.force.graph.force;
 
 public class Link {
-
     private final Node source;
     private final Node target;
 

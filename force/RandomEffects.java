@@ -1,10 +1,9 @@
-package com.vaticle.force.graph;
+package com.vaticle.force.graph.force;
 
 import java.util.Random;
 import java.util.function.Supplier;
 
 public class RandomEffects {
-
     public static double jiggle() {
         Random random = new Random();
         return jiggle(random::nextDouble);

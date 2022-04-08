@@ -1,15 +1,13 @@
-package com.vaticle.force.graph;
+package com.vaticle.force.graph.force;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.function.Function;
 
-import static com.vaticle.force.graph.RandomEffects.jiggle;
+import static com.vaticle.force.graph.force.RandomEffects.jiggle;
 
 public class LinkForce extends BaseForce {
-
     final Collection<Link> links;
     final double baseStrength;
     double distance;

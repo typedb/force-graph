@@ -1,12 +1,11 @@
-package com.vaticle.force.graph;
+package com.vaticle.force.graph.force;
 
 import java.util.Collection;
 import java.util.function.Supplier;
 
-import static com.vaticle.force.graph.StandardFunctions.constant;
+import static com.vaticle.force.graph.force.StandardFunctions.constant;
 
 public class XForce extends BaseForce {
-
     double strength;
     Supplier<Double> x;
 
