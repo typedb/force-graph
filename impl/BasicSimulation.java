@@ -41,7 +41,7 @@ public class BasicSimulation implements Simulation {
     private double alphaDecay;
     private double alphaTarget;
     private double velocityDecay;
-    private final Collection<Force> forces;
+    protected final Collection<Force> forces;
     private final ConcurrentMap<Node, Integer> nodesIndexed;
     private final AtomicInteger nextNodeID;
 

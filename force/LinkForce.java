@@ -29,6 +29,7 @@ public class LinkForce extends BaseForce {
         this.baseStrength = strength;
         this.distance = distance;
         random = new Random();
+        onNodesChanged();
     }
 
     @Override
