@@ -11,8 +11,8 @@ import java.util.function.Function;
 
 import static com.vaticle.force.graph.util.RandomEffects.jiggle;
 
-public class CollideForce<NODE_ID extends Comparable<NODE_ID>> implements Force {
-    private final Map<Vertex, NODE_ID> nodesIndexed;
+public class CollideForce<VERTEX_ID extends Comparable<VERTEX_ID>> implements Force {
+    private final Map<Vertex, VERTEX_ID> verticesIndexed;
     private final double radius;
     private Map<Quadtree<Vertex>.Node, Double> quadRadii;
     private final Function<Vertex, Double> x;
@@ -20,8 +20,8 @@ public class CollideForce<NODE_ID extends Comparable<NODE_ID>> implements Force 
     double strength;
     Random random;
 
-    public CollideForce(Map<Vertex, NODE_ID> nodesIndexed, double radius, double strength) {
-        this.nodesIndexed = nodesIndexed;
+    public CollideForce(Map<Vertex, VERTEX_ID> verticesIndexed, double radius, double strength) {
+        this.verticesIndexed = verticesIndexed;
         this.radius = radius;
         this.strength = strength;
         x = node -> node.x() + node.vx();
@@ -31,11 +31,11 @@ public class CollideForce<NODE_ID extends Comparable<NODE_ID>> implements Force 
 
     @Override
     public void apply(double alpha) {
-        Quadtree<Vertex> tree = new Quadtree<>(nodesIndexed.keySet(), x, y);
+        Quadtree<Vertex> tree = new Quadtree<>(verticesIndexed.keySet(), x, y);
         quadRadii = new HashMap<>();
         tree.visitAfter(this::prepare);
 
-        for (Vertex vertex : nodesIndexed.keySet()) {
+        for (Vertex vertex : verticesIndexed.keySet()) {
             double ri = radius; double ri2 = ri * ri;
             double xi = vertex.x() + vertex.vx();
             double yi = vertex.y() + vertex.vy();
@@ -44,7 +44,7 @@ public class CollideForce<NODE_ID extends Comparable<NODE_ID>> implements Force 
                 double rj = quadRadii.get(quad.node);
                 double r = ri + rj;
                 if (data != null) {
-                    if (nodesIndexed.get(data).compareTo(nodesIndexed.get(vertex)) > 0) {
+                    if (verticesIndexed.get(data).compareTo(verticesIndexed.get(vertex)) > 0) {
                         double x = xi - data.x() - data.vx();
                         double y = yi - data.y() - data.vy();
                         double len = x*x + y*y;

@@ -17,7 +17,7 @@ public class XForce extends BaseForce {
 
     @Override
     public void apply(double alpha) {
-        for (Vertex vertex : nodes()) {
+        for (Vertex vertex : vertices()) {
             vertex.vx(vertex.vx() + (x.get() - vertex.x()) * strength * alpha);
         }
     }

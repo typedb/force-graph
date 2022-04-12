@@ -19,13 +19,13 @@ public class CenterForce extends BaseForce {
     @Override
     public void apply(double alpha) {
         double sx = 0, sy = 0;
-        for (Vertex vertex : nodes()) {
+        for (Vertex vertex : vertices()) {
             sx += vertex.x(); sy += vertex.y();
         }
-        int n = nodes().size();
+        int n = vertices().size();
         sx = (sx / n - x) * strength;
         sy = (sy / n - y) * strength;
-        for (Vertex vertex : nodes()) {
+        for (Vertex vertex : vertices()) {
             vertex.x(vertex.x() - sx); vertex.y(vertex.y() - sy);
         }
     }

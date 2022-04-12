@@ -25,16 +25,16 @@ public class LinkForce extends BaseForce {
         this.baseStrength = strength;
         this.distance = distance;
         random = new Random();
-        onNodesChanged();
+        onVerticesChanged();
     }
 
     @Override
-    public void onNodesChanged() {
+    public void onVerticesChanged() {
         count = new HashMap<>();
         bias = new HashMap<>();
         strengths = new HashMap<>();
 
-        if (nodes().isEmpty()) return;
+        if (vertices().isEmpty()) return;
 
         for (Edge edge : edges) {
             count.putIfAbsent(edge.source(), 0);

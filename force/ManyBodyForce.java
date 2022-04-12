@@ -29,11 +29,11 @@ public class ManyBodyForce extends BaseForce {
 
     @Override
     public void apply(double alpha) {
-        Quadtree<Vertex> tree = new Quadtree<>(nodes(), Vertex::x, Vertex::y);
+        Quadtree<Vertex> tree = new Quadtree<>(vertices(), Vertex::x, Vertex::y);
         quads = new HashMap<>();
         tree.visitAfter(this::accumulate);
 
-        for (Vertex vertex : nodes()) {
+        for (Vertex vertex : vertices()) {
             tree.visit(quad -> {
                 QuadData q = quads.get(quad.node);
                 if (q == null || q.value == 0.0) return true;

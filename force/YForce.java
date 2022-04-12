@@ -17,7 +17,7 @@ public class YForce extends BaseForce {
 
     @Override
     public void apply(double alpha) {
-        for (Vertex vertex : nodes()) {
+        for (Vertex vertex : vertices()) {
             vertex.vy(vertex.vy() + (y.get() - vertex.y()) * strength * alpha);
         }
     }

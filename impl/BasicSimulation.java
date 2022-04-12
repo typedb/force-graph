@@ -50,7 +50,7 @@ public class BasicSimulation implements Simulation {
     private double alphaTarget;
     private double velocityDecay;
     private final Forces forces;
-    private final ConcurrentMap<Vertex, Integer> nodesIndexed;
+    private final ConcurrentMap<Vertex, Integer> verticesIndexed;
     private final AtomicInteger nextNodeID;
 
     private static final int INITIAL_PLACEMENT_RADIUS = 10;
@@ -64,13 +64,13 @@ public class BasicSimulation implements Simulation {
         alphaTarget = 0;
         velocityDecay = 0.6;
         forces = new Forces();
-        nodesIndexed = new ConcurrentHashMap<>();
+        verticesIndexed = new ConcurrentHashMap<>();
         nextNodeID = new AtomicInteger();
     }
 
     @Override
-    public Collection<Vertex> nodes() {
-        return nodesIndexed.keySet();
+    public Collection<Vertex> vertices() {
+        return verticesIndexed.keySet();
     }
 
     @Override
@@ -84,7 +84,7 @@ public class BasicSimulation implements Simulation {
 
         forces.applyAll();
 
-        for (Vertex vertex : nodes()) {
+        for (Vertex vertex : vertices()) {
             if (vertex.isXFixed()) vertex.vx(0);
             else {
                 vertex.vx(vertex.vx() * velocityDecay);
@@ -99,9 +99,9 @@ public class BasicSimulation implements Simulation {
     }
 
     @Override
-    public void placeNodes(Collection<Vertex> vertices) {
+    public void placeVertices(Collection<Vertex> vertices) {
         vertices.forEach(this::placeNode);
-        forces.onNodesChanged();
+        forces.onVerticesChanged();
     }
 
     protected void placeNode(Vertex vertex) {
@@ -110,7 +110,7 @@ public class BasicSimulation implements Simulation {
         double angle = id * INITIAL_PLACEMENT_ANGLE;
         vertex.x(vertex.x() + (vertex.isXFixed() ? 0 : radius * Math.cos(angle)));
         vertex.y(vertex.y() + (vertex.isYFixed() ? 0 : radius * Math.sin(angle)));
-        nodesIndexed.put(vertex, id);
+        verticesIndexed.put(vertex, id);
     }
 
     @Override
@@ -171,7 +171,7 @@ public class BasicSimulation implements Simulation {
     @Override
     public synchronized void clear() {
         forces.clear();
-        nodesIndexed.clear();
+        verticesIndexed.clear();
         nextNodeID.set(0);
     }
 
@@ -186,13 +186,13 @@ public class BasicSimulation implements Simulation {
             forces.forEach(force -> force.apply(alpha));
         }
 
-        void onNodesChanged() {
-            forces.forEach(Force::onNodesChanged);
+        void onVerticesChanged() {
+            forces.forEach(Force::onVerticesChanged);
         }
 
         void add(Force force) {
             forces.add(requireNonNull(force));
-            force.onNodesChanged();
+            force.onVerticesChanged();
         }
 
         @Override
@@ -214,7 +214,7 @@ public class BasicSimulation implements Simulation {
 
         @Override
         public CollideForce<Integer> addCollideForce(Collection<Vertex> vertices, double radius, double strength) {
-            CollideForce<Integer> force = new CollideForce<>(vertices.stream().collect(toMap(x -> x, nodesIndexed::get)), radius, strength);
+            CollideForce<Integer> force = new CollideForce<>(vertices.stream().collect(toMap(x -> x, verticesIndexed::get)), radius, strength);
             add(force);
             return force;
         }

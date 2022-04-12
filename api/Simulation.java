@@ -12,11 +12,11 @@ import java.util.Collection;
 import java.util.function.Supplier;
 
 public interface Simulation {
-    Collection<Vertex> nodes();
+    Collection<Vertex> vertices();
 
     Forces forces();
 
-    void placeNodes(Collection<Vertex> vertices);
+    void placeVertices(Collection<Vertex> vertices);
 
     void tick();
 
