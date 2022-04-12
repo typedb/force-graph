@@ -19,10 +19,6 @@ public class LinkForce extends BaseForce {
     Map<Link, Double> strengths;
     Random random;
 
-    public LinkForce(Collection<Node> nodes, Collection<Link> links, double distance) {
-        this(nodes, links, distance, 1.0);
-    }
-
     public LinkForce(Collection<Node> nodes, Collection<Link> links, double distance, double strength) {
         super(nodes);
         this.links = links;

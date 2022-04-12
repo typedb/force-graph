@@ -5,14 +5,9 @@ import com.vaticle.force.graph.api.Node;
 import java.util.Collection;
 
 public class CenterForce extends BaseForce {
-
     double x;
     double y;
     double strength;
-
-    public CenterForce(Collection<Node> nodes, double x, double y) {
-        this(nodes, x, y, 1);
-    }
 
     public CenterForce(Collection<Node> nodes, double x, double y, double strength) {
         super(nodes);

@@ -18,10 +18,6 @@ public class ManyBodyForce extends BaseForce {
     private Map<Quadtree<Node>.Node, QuadData> quads;
     Random random;
 
-    public ManyBodyForce(Collection<Node> nodes, double strength) {
-        this(nodes, strength, Math.sqrt(Double.MAX_VALUE));
-    }
-
     public ManyBodyForce(Collection<Node> nodes, double strength, double distanceMax) {
         super(nodes);
         this.strength = strength;

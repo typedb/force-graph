@@ -21,10 +21,6 @@ public class CollideForce<NODE_ID extends Comparable<NODE_ID>> implements Force 
     double strength;
     Random random;
 
-    public CollideForce(Map<Node, NODE_ID> nodesIndexed, double radius) {
-        this(nodesIndexed, radius, 1);
-    }
-
     public CollideForce(Map<Node, NODE_ID> nodesIndexed, double radius, double strength) {
         this.nodesIndexed = nodesIndexed;
         this.radius = radius;
