@@ -1,8 +1,8 @@
 package com.vaticle.force.graph.impl;
 
-import com.vaticle.force.graph.api.Node;
+import com.vaticle.force.graph.api.Vertex;
 
-public class BasicNode implements Node {
+public class BasicVertex implements Vertex {
     private double x;
     private double y;
     public double vx;
@@ -11,11 +11,11 @@ public class BasicNode implements Node {
     private final boolean isXFixed;
     private final boolean isYFixed;
 
-    public BasicNode(double x, double y) {
+    public BasicVertex(double x, double y) {
         this(x, y, false, false);
     }
 
-    public BasicNode(double x, double y, boolean isXFixed, boolean isYFixed) {
+    public BasicVertex(double x, double y, boolean isXFixed, boolean isYFixed) {
         this.x = x;
         this.y = y;
         this.isXFixed = isXFixed;

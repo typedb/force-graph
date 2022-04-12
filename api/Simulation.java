@@ -12,11 +12,11 @@ import java.util.Collection;
 import java.util.function.Supplier;
 
 public interface Simulation {
-    Collection<Node> nodes();
+    Collection<Vertex> nodes();
 
     Forces forces();
 
-    void placeNodes(Collection<Node> nodes);
+    void placeNodes(Collection<Vertex> vertices);
 
     void tick();
 
@@ -43,33 +43,33 @@ public interface Simulation {
     void clear();
 
     interface Forces {
-        CenterForce addCenterForce(Collection<Node> nodes, double x, double y);
+        CenterForce addCenterForce(Collection<Vertex> vertices, double x, double y);
 
-        CenterForce addCenterForce(Collection<Node> nodes, double x, double y, double strength);
+        CenterForce addCenterForce(Collection<Vertex> vertices, double x, double y, double strength);
 
-        CollideForce<Integer> addCollideForce(Collection<Node> nodes, double radius);
+        CollideForce<Integer> addCollideForce(Collection<Vertex> vertices, double radius);
 
-        CollideForce<Integer> addCollideForce(Collection<Node> nodes, double radius, double strength);
+        CollideForce<Integer> addCollideForce(Collection<Vertex> vertices, double radius, double strength);
 
-        LinkForce addLinkForce(Collection<Node> nodes, Collection<Link> links, double distance);
+        LinkForce addLinkForce(Collection<Vertex> vertices, Collection<Edge> edges, double distance);
 
-        LinkForce addLinkForce(Collection<Node> nodes, Collection<Link> links, double distance, double strength);
+        LinkForce addLinkForce(Collection<Vertex> vertices, Collection<Edge> edges, double distance, double strength);
 
-        ManyBodyForce addManyBodyForce(Collection<Node> nodes, double strength);
+        ManyBodyForce addManyBodyForce(Collection<Vertex> vertices, double strength);
 
-        ManyBodyForce addManyBodyForce(Collection<Node> nodes, double strength, double distanceMax);
+        ManyBodyForce addManyBodyForce(Collection<Vertex> vertices, double strength, double distanceMax);
 
-        XForce addXForce(Collection<Node> nodes, double x);
+        XForce addXForce(Collection<Vertex> vertices, double x);
 
-        XForce addXForce(Collection<Node> nodes, double x, double strength);
+        XForce addXForce(Collection<Vertex> vertices, double x, double strength);
 
-        XForce addXForce(Collection<Node> nodes, Supplier<Double> x, double strength);
+        XForce addXForce(Collection<Vertex> vertices, Supplier<Double> x, double strength);
 
-        YForce addYForce(Collection<Node> nodes, double y);
+        YForce addYForce(Collection<Vertex> vertices, double y);
 
-        YForce addYForce(Collection<Node> nodes, double y, double strength);
+        YForce addYForce(Collection<Vertex> vertices, double y, double strength);
 
-        YForce addYForce(Collection<Node> nodes, Supplier<Double> y, double strength);
+        YForce addYForce(Collection<Vertex> vertices, Supplier<Double> y, double strength);
 
         boolean remove(Force force);
 

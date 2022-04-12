@@ -21,8 +21,8 @@
 
 package com.vaticle.force.graph.impl;
 
-import com.vaticle.force.graph.api.Link;
-import com.vaticle.force.graph.api.Node;
+import com.vaticle.force.graph.api.Edge;
+import com.vaticle.force.graph.api.Vertex;
 import com.vaticle.force.graph.api.Simulation;
 import com.vaticle.force.graph.api.Force;
 import com.vaticle.force.graph.force.CenterForce;
@@ -50,7 +50,7 @@ public class BasicSimulation implements Simulation {
     private double alphaTarget;
     private double velocityDecay;
     private final Forces forces;
-    private final ConcurrentMap<Node, Integer> nodesIndexed;
+    private final ConcurrentMap<Vertex, Integer> nodesIndexed;
     private final AtomicInteger nextNodeID;
 
     private static final int INITIAL_PLACEMENT_RADIUS = 10;
@@ -69,7 +69,7 @@ public class BasicSimulation implements Simulation {
     }
 
     @Override
-    public Collection<Node> nodes() {
+    public Collection<Vertex> nodes() {
         return nodesIndexed.keySet();
     }
 
@@ -84,33 +84,33 @@ public class BasicSimulation implements Simulation {
 
         forces.applyAll();
 
-        for (Node node : nodes()) {
-            if (node.isXFixed()) node.vx(0);
+        for (Vertex vertex : nodes()) {
+            if (vertex.isXFixed()) vertex.vx(0);
             else {
-                node.vx(node.vx() * velocityDecay);
-                node.x(node.x() + node.vx());
+                vertex.vx(vertex.vx() * velocityDecay);
+                vertex.x(vertex.x() + vertex.vx());
             }
-            if (node.isYFixed()) node.vy(0);
+            if (vertex.isYFixed()) vertex.vy(0);
             else {
-                node.vy(node.vy() * velocityDecay);
-                node.y(node.y() + node.vy());
+                vertex.vy(vertex.vy() * velocityDecay);
+                vertex.y(vertex.y() + vertex.vy());
             }
         }
     }
 
     @Override
-    public void placeNodes(Collection<Node> nodes) {
-        nodes.forEach(this::placeNode);
+    public void placeNodes(Collection<Vertex> vertices) {
+        vertices.forEach(this::placeNode);
         forces.onNodesChanged();
     }
 
-    protected void placeNode(Node node) {
+    protected void placeNode(Vertex vertex) {
         int id = nextNodeID.getAndIncrement();
         double radius = INITIAL_PLACEMENT_RADIUS * Math.sqrt(0.5 + id);
         double angle = id * INITIAL_PLACEMENT_ANGLE;
-        node.x(node.x() + (node.isXFixed() ? 0 : radius * Math.cos(angle)));
-        node.y(node.y() + (node.isYFixed() ? 0 : radius * Math.sin(angle)));
-        nodesIndexed.put(node, id);
+        vertex.x(vertex.x() + (vertex.isXFixed() ? 0 : radius * Math.cos(angle)));
+        vertex.y(vertex.y() + (vertex.isYFixed() ? 0 : radius * Math.sin(angle)));
+        nodesIndexed.put(vertex, id);
     }
 
     @Override
@@ -196,83 +196,83 @@ public class BasicSimulation implements Simulation {
         }
 
         @Override
-        public CenterForce addCenterForce(Collection<Node> nodes, double x, double y) {
-            return addCenterForce(nodes, x, y, DEFAULT_FORCE_STRENGTH);
+        public CenterForce addCenterForce(Collection<Vertex> vertices, double x, double y) {
+            return addCenterForce(vertices, x, y, DEFAULT_FORCE_STRENGTH);
         }
 
         @Override
-        public CenterForce addCenterForce(Collection<Node> nodes, double x, double y, double strength) {
-            CenterForce force = new CenterForce(nodes, x, y, strength);
+        public CenterForce addCenterForce(Collection<Vertex> vertices, double x, double y, double strength) {
+            CenterForce force = new CenterForce(vertices, x, y, strength);
             add(force);
             return force;
         }
 
         @Override
-        public CollideForce<Integer> addCollideForce(Collection<Node> nodes, double radius) {
-            return addCollideForce(nodes, radius, DEFAULT_FORCE_STRENGTH);
+        public CollideForce<Integer> addCollideForce(Collection<Vertex> vertices, double radius) {
+            return addCollideForce(vertices, radius, DEFAULT_FORCE_STRENGTH);
         }
 
         @Override
-        public CollideForce<Integer> addCollideForce(Collection<Node> nodes, double radius, double strength) {
-            CollideForce<Integer> force = new CollideForce<>(nodes.stream().collect(toMap(x -> x, nodesIndexed::get)), radius, strength);
+        public CollideForce<Integer> addCollideForce(Collection<Vertex> vertices, double radius, double strength) {
+            CollideForce<Integer> force = new CollideForce<>(vertices.stream().collect(toMap(x -> x, nodesIndexed::get)), radius, strength);
             add(force);
             return force;
         }
 
         @Override
-        public LinkForce addLinkForce(Collection<Node> nodes, Collection<Link> links, double distance) {
-            return addLinkForce(nodes, links, distance, DEFAULT_FORCE_STRENGTH);
+        public LinkForce addLinkForce(Collection<Vertex> vertices, Collection<Edge> edges, double distance) {
+            return addLinkForce(vertices, edges, distance, DEFAULT_FORCE_STRENGTH);
         }
 
         @Override
-        public LinkForce addLinkForce(Collection<Node> nodes, Collection<Link> links, double distance, double strength) {
-            LinkForce force = new LinkForce(nodes, links, distance, strength);
+        public LinkForce addLinkForce(Collection<Vertex> vertices, Collection<Edge> edges, double distance, double strength) {
+            LinkForce force = new LinkForce(vertices, edges, distance, strength);
             add(force);
             return force;
         }
 
         @Override
-        public ManyBodyForce addManyBodyForce(Collection<Node> nodes, double strength) {
-            return addManyBodyForce(nodes, strength, Math.sqrt(Double.MAX_VALUE));
+        public ManyBodyForce addManyBodyForce(Collection<Vertex> vertices, double strength) {
+            return addManyBodyForce(vertices, strength, Math.sqrt(Double.MAX_VALUE));
         }
 
         @Override
-        public ManyBodyForce addManyBodyForce(Collection<Node> nodes, double strength, double distanceMax) {
-            ManyBodyForce force = new ManyBodyForce(nodes, strength, distanceMax);
+        public ManyBodyForce addManyBodyForce(Collection<Vertex> vertices, double strength, double distanceMax) {
+            ManyBodyForce force = new ManyBodyForce(vertices, strength, distanceMax);
             add(force);
             return force;
         }
 
         @Override
-        public XForce addXForce(Collection<Node> nodes, double x) {
-            return addXForce(nodes, x, DEFAULT_FORCE_STRENGTH);
+        public XForce addXForce(Collection<Vertex> vertices, double x) {
+            return addXForce(vertices, x, DEFAULT_FORCE_STRENGTH);
         }
 
         @Override
-        public XForce addXForce(Collection<Node> nodes, double x, double strength) {
-            return addXForce(nodes, constant(x), strength);
+        public XForce addXForce(Collection<Vertex> vertices, double x, double strength) {
+            return addXForce(vertices, constant(x), strength);
         }
 
         @Override
-        public XForce addXForce(Collection<Node> nodes, Supplier<Double> x, double strength) {
-            XForce force = new XForce(nodes, x, strength);
+        public XForce addXForce(Collection<Vertex> vertices, Supplier<Double> x, double strength) {
+            XForce force = new XForce(vertices, x, strength);
             add(force);
             return force;
         }
 
         @Override
-        public YForce addYForce(Collection<Node> nodes, double y) {
-            return addYForce(nodes, y, DEFAULT_FORCE_STRENGTH);
+        public YForce addYForce(Collection<Vertex> vertices, double y) {
+            return addYForce(vertices, y, DEFAULT_FORCE_STRENGTH);
         }
 
         @Override
-        public YForce addYForce(Collection<Node> nodes, double y, double strength) {
-            return addYForce(nodes, constant(y), strength);
+        public YForce addYForce(Collection<Vertex> vertices, double y, double strength) {
+            return addYForce(vertices, constant(y), strength);
         }
 
         @Override
-        public YForce addYForce(Collection<Node> nodes, Supplier<Double> y, double strength) {
-            YForce force = new YForce(nodes, y, strength);
+        public YForce addYForce(Collection<Vertex> vertices, Supplier<Double> y, double strength) {
+            YForce force = new YForce(vertices, y, strength);
             add(force);
             return force;
         }

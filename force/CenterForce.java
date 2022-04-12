@@ -1,6 +1,6 @@
 package com.vaticle.force.graph.force;
 
-import com.vaticle.force.graph.api.Node;
+import com.vaticle.force.graph.api.Vertex;
 
 import java.util.Collection;
 
@@ -9,8 +9,8 @@ public class CenterForce extends BaseForce {
     double y;
     double strength;
 
-    public CenterForce(Collection<Node> nodes, double x, double y, double strength) {
-        super(nodes);
+    public CenterForce(Collection<Vertex> vertices, double x, double y, double strength) {
+        super(vertices);
         this.x = x;
         this.y = y;
         this.strength = strength;
@@ -19,14 +19,14 @@ public class CenterForce extends BaseForce {
     @Override
     public void apply(double alpha) {
         double sx = 0, sy = 0;
-        for (Node node : nodes()) {
-            sx += node.x(); sy += node.y();
+        for (Vertex vertex : nodes()) {
+            sx += vertex.x(); sy += vertex.y();
         }
         int n = nodes().size();
         sx = (sx / n - x) * strength;
         sy = (sy / n - y) * strength;
-        for (Node node : nodes()) {
-            node.x(node.x() - sx); node.y(node.y() - sy);
+        for (Vertex vertex : nodes()) {
+            vertex.x(vertex.x() - sx); vertex.y(vertex.y() - sy);
         }
     }
 }

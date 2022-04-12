@@ -1,6 +1,6 @@
 package com.vaticle.force.graph.api;
 
-public interface Node {
+public interface Vertex {
     boolean isXFixed();
 
     boolean isYFixed();

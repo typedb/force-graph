@@ -1,18 +1,18 @@
 package com.vaticle.force.graph.force;
 
 import com.vaticle.force.graph.api.Force;
-import com.vaticle.force.graph.api.Node;
+import com.vaticle.force.graph.api.Vertex;
 
 import java.util.Collection;
 
 public abstract class BaseForce implements Force {
-    private final Collection<Node> nodes;
+    private final Collection<Vertex> vertices;
 
-    BaseForce(Collection<Node> nodes) {
-        this.nodes = nodes;
+    BaseForce(Collection<Vertex> vertices) {
+        this.vertices = vertices;
     }
 
-    protected Collection<Node> nodes() {
-        return nodes;
+    protected Collection<Vertex> nodes() {
+        return vertices;
     }
 }

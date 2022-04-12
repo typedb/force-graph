@@ -1,6 +1,6 @@
 package com.vaticle.force.graph.force;
 
-import com.vaticle.force.graph.api.Node;
+import com.vaticle.force.graph.api.Vertex;
 import com.vaticle.force.graph.quadtree.Quadtree;
 
 import java.util.Collection;
@@ -15,11 +15,11 @@ public class ManyBodyForce extends BaseForce {
     double distanceMin2;
     double distanceMax2;
     double theta2;
-    private Map<Quadtree<Node>.Node, QuadData> quads;
+    private Map<Quadtree<Vertex>.Node, QuadData> quads;
     Random random;
 
-    public ManyBodyForce(Collection<Node> nodes, double strength, double distanceMax) {
-        super(nodes);
+    public ManyBodyForce(Collection<Vertex> vertices, double strength, double distanceMax) {
+        super(vertices);
         this.strength = strength;
         this.distanceMin2 = 1.0;
         this.distanceMax2 = distanceMax * distanceMax;
@@ -29,17 +29,17 @@ public class ManyBodyForce extends BaseForce {
 
     @Override
     public void apply(double alpha) {
-        Quadtree<Node> tree = new Quadtree<>(nodes(), Node::x, Node::y);
+        Quadtree<Vertex> tree = new Quadtree<>(nodes(), Vertex::x, Vertex::y);
         quads = new HashMap<>();
         tree.visitAfter(this::accumulate);
 
-        for (Node node : nodes()) {
+        for (Vertex vertex : nodes()) {
             tree.visit(quad -> {
                 QuadData q = quads.get(quad.node);
                 if (q == null || q.value == 0.0) return true;
 
-                double x = q.x - node.x();
-                double y = q.y - node.y();
+                double x = q.x - vertex.x();
+                double y = q.y - vertex.y();
                 double w = quad.x1 - quad.x0;
                 double len = x*x + y*y;
 
@@ -56,8 +56,8 @@ public class ManyBodyForce extends BaseForce {
                             len += y*y;
                         }
                         if (len < distanceMin2) len = Math.sqrt(distanceMin2 * len);
-                        node.vx(node.vx() + x * q.value * alpha / len);
-                        node.vy(node.vy() + y * q.value * alpha / len);
+                        vertex.vx(vertex.vx() + x * q.value * alpha / len);
+                        vertex.vy(vertex.vy() + y * q.value * alpha / len);
                     }
                     return true;
                 }
@@ -66,7 +66,7 @@ public class ManyBodyForce extends BaseForce {
                 if (!quad.node.children.isEmpty() || len >= distanceMax2) return false;
 
                 // Limit forces for very close nodes; randomise direction if coincident
-                if (!quad.node.data.equals(node) || quad.node.next != null) {
+                if (!quad.node.data.equals(vertex) || quad.node.next != null) {
                     if (x == 0) {
                         x = jiggle(random::nextDouble);
                         len += x*x;
@@ -78,12 +78,12 @@ public class ManyBodyForce extends BaseForce {
                     if (len < distanceMin2) len = Math.sqrt(distanceMin2 * len);
                 }
 
-                Quadtree<Node>.Node n = quad.node;
+                Quadtree<Vertex>.Node n = quad.node;
                 do {
-                    if (!quad.node.data.equals(node)) {
+                    if (!quad.node.data.equals(vertex)) {
                         double u = strength * alpha / len;
-                        node.vx(node.vx() + x * u);
-                        node.vy(node.vy() + y * u);
+                        vertex.vx(vertex.vx() + x * u);
+                        vertex.vy(vertex.vy() + y * u);
                     }
                     n = n.next;
                 } while (n != null);
@@ -93,7 +93,7 @@ public class ManyBodyForce extends BaseForce {
         }
     }
 
-    private void accumulate(Quadtree<Node>.Quad quad) {
+    private void accumulate(Quadtree<Vertex>.Quad quad) {
         double strength = 0.0;
 
         if (!quad.node.children.isEmpty()) {
@@ -101,7 +101,7 @@ public class ManyBodyForce extends BaseForce {
             double weight = 0.0;
             double x = 0.0, y = 0.0;
             for (int i = 0; i < 4; i++) {
-                Quadtree<Node>.Node qi = quad.node.children.get(i);
+                Quadtree<Vertex>.Node qi = quad.node.children.get(i);
                 if (qi == null) continue;
                 QuadData qiData = quads.get(qi);
                 if (qiData == null || qiData.value == 0.0) continue;
@@ -113,7 +113,7 @@ public class ManyBodyForce extends BaseForce {
             quads.put(quad.node, new QuadData(x / weight, y / weight, strength));
         } else {
             // For leaf nodes, accumulate forces from coincident quadrants
-            Quadtree<Node>.Node n = quad.node;
+            Quadtree<Vertex>.Node n = quad.node;
             quads.put(n, new QuadData(n.data.x(), n.data.y(), 0.0));
             do {
                 strength += this.strength;
