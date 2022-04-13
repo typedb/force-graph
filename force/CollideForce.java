@@ -5,14 +5,15 @@ import com.vaticle.force.graph.api.Vertex;
 import com.vaticle.force.graph.quadtree.Quadtree;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.function.Function;
 
 import static com.vaticle.force.graph.util.RandomEffects.jiggle;
 
-public class CollideForce<VERTEX_ID extends Comparable<VERTEX_ID>> implements Force {
-    private final Map<Vertex, VERTEX_ID> verticesIndexed;
+public class CollideForce implements Force {
+    private final List<Vertex> vertexList;
     private final double radius;
     private Map<Quadtree<Vertex>.Node, Double> quadRadii;
     private final Function<Vertex, Double> x;
@@ -20,8 +21,8 @@ public class CollideForce<VERTEX_ID extends Comparable<VERTEX_ID>> implements Fo
     double strength;
     Random random;
 
-    public CollideForce(Map<Vertex, VERTEX_ID> verticesIndexed, double radius, double strength) {
-        this.verticesIndexed = verticesIndexed;
+    public CollideForce(List<Vertex> vertexList, double radius, double strength) {
+        this.vertexList = vertexList;
         this.radius = radius;
         this.strength = strength;
         x = node -> node.x() + node.vx();
@@ -31,11 +32,17 @@ public class CollideForce<VERTEX_ID extends Comparable<VERTEX_ID>> implements Fo
 
     @Override
     public void apply(double alpha) {
-        Quadtree<Vertex> tree = new Quadtree<>(verticesIndexed.keySet(), x, y);
+        Quadtree<Vertex> tree = new Quadtree<>(vertexList, x, y);
         quadRadii = new HashMap<>();
         tree.visitAfter(this::prepare);
+        Map<Vertex, Integer> vertexIndices = new HashMap<>();
+        for (int i = 0; i < vertexList.size(); i++) {
+            vertexIndices.put(vertexList.get(i), i);
+        }
 
-        for (Vertex vertex : verticesIndexed.keySet()) {
+        for (int i = 0; i < vertexList.size(); i++) {
+            final int index = i;
+            Vertex vertex = vertexList.get(i);
             double ri = radius; double ri2 = ri * ri;
             double xi = vertex.x() + vertex.vx();
             double yi = vertex.y() + vertex.vy();
@@ -44,7 +51,7 @@ public class CollideForce<VERTEX_ID extends Comparable<VERTEX_ID>> implements Fo
                 double rj = quadRadii.get(quad.node);
                 double r = ri + rj;
                 if (data != null) {
-                    if (verticesIndexed.get(data).compareTo(verticesIndexed.get(vertex)) > 0) {
+                    if (vertexIndices.get(data).compareTo(index) > 0) {
                         double x = xi - data.x() - data.vx();
                         double y = yi - data.y() - data.vy();
                         double len = x*x + y*y;

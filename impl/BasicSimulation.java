@@ -34,6 +34,7 @@ import com.vaticle.force.graph.force.YForce;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -99,7 +100,7 @@ public class BasicSimulation implements Simulation {
     }
 
     @Override
-    public void placeVertices(Collection<Vertex> vertices) {
+    public synchronized void placeVertices(Collection<Vertex> vertices) {
         vertices.forEach(this::placeNode);
         forces.onVerticesChanged();
     }
@@ -208,13 +209,13 @@ public class BasicSimulation implements Simulation {
         }
 
         @Override
-        public CollideForce<Integer> addCollideForce(Collection<Vertex> vertices, double radius) {
+        public CollideForce addCollideForce(List<Vertex> vertices, double radius) {
             return addCollideForce(vertices, radius, DEFAULT_FORCE_STRENGTH);
         }
 
         @Override
-        public CollideForce<Integer> addCollideForce(Collection<Vertex> vertices, double radius, double strength) {
-            CollideForce<Integer> force = new CollideForce<>(vertices.stream().collect(toMap(x -> x, verticesIndexed::get)), radius, strength);
+        public CollideForce addCollideForce(List<Vertex> vertices, double radius, double strength) {
+            CollideForce force = new CollideForce(vertices, radius, strength);
             add(force);
             return force;
         }
