@@ -50,6 +50,11 @@ public class LinkForce extends BaseForce {
 
     @Override
     public void apply(double alpha) {
+        apply(vertices(), alpha);
+    }
+
+    @Override
+    public void apply(Collection<Vertex> vertexPartition, double alpha) {
         for (Edge edge : edges) {
             double deltaX = edge.target().x() + edge.target().vx() - edge.source().x() - edge.source().vx();
             double x = deltaX != 0 ? deltaX : jiggle(random::nextDouble);

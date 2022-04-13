@@ -17,15 +17,15 @@ public class CenterForce extends BaseForce {
     }
 
     @Override
-    public void apply(double alpha) {
+    public void apply(Collection<Vertex> vertexPartition, double alpha) {
         double sx = 0, sy = 0;
-        for (Vertex vertex : vertices()) {
+        for (Vertex vertex : vertexPartition) {
             sx += vertex.x(); sy += vertex.y();
         }
         int n = vertices().size();
         sx = (sx / n - x) * strength;
         sy = (sy / n - y) * strength;
-        for (Vertex vertex : vertices()) {
+        for (Vertex vertex : vertexPartition) {
             vertex.x(vertex.x() - sx); vertex.y(vertex.y() - sy);
         }
     }

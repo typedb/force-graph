@@ -28,12 +28,12 @@ public class ManyBodyForce extends BaseForce {
     }
 
     @Override
-    public void apply(double alpha) {
+    public void apply(Collection<Vertex> vertexPartition, double alpha) {
         Quadtree<Vertex> tree = new Quadtree<>(vertices(), Vertex::x, Vertex::y);
         quads = new HashMap<>();
         tree.visitAfter(this::accumulate);
 
-        for (Vertex vertex : vertices()) {
+        for (Vertex vertex : vertexPartition) {
             tree.visit(quad -> {
                 QuadData q = quads.get(quad.node);
                 if (q == null || q.value == 0.0) return true;

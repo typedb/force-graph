@@ -34,8 +34,17 @@ import com.vaticle.force.graph.force.YForce;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -177,13 +186,49 @@ public class BasicSimulation implements Simulation {
 
     public class Forces implements Simulation.Forces {
         final Collection<Force> forces;
+        private static final int VERTEX_PARTITION_SIZE = 500;
+        private final ExecutorCompletionService<Void> executor;
 
         Forces() {
             forces = new ArrayList<>();
+            ExecutorService executorService = new ForkJoinPool(16);
+            executor = new ExecutorCompletionService<>(executorService);
         }
 
-        void applyAll() {
-            forces.forEach(force -> force.apply(alpha));
+        synchronized void applyAll() {
+            int submittedTaskCount = 0;
+            Collection<Collection<Vertex>> vertexPartitions = new ArrayList<>();
+            Iterator<Vertex> vertexIterator = vertices().iterator();
+            Collection<Vertex> currentPartition = new ArrayList<>();
+            vertexPartitions.add(currentPartition);
+            while (vertexIterator.hasNext()) {
+                currentPartition.add(vertexIterator.next());
+                if (currentPartition.size() == VERTEX_PARTITION_SIZE) {
+                    currentPartition = new ArrayList<>();
+                    vertexPartitions.add(currentPartition);
+                }
+            }
+            for (Force force : forces) {
+                if (force instanceof ManyBodyForce || force instanceof CollideForce) {
+                    for (Collection<Vertex> vertexPartition : vertexPartitions) {
+                        executor.submit(() -> {
+                            force.apply(vertexPartition, alpha);
+                            return null;
+                        });
+                        submittedTaskCount++;
+                    }
+                }
+            }
+            try {
+                for (int i = 0; i < submittedTaskCount; i++) executor.take();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            for (Force force : forces) {
+                if (!(force instanceof ManyBodyForce) && !(force instanceof CollideForce)) {
+                    force.apply(alpha);
+                }
+            }
         }
 
         void onVerticesChanged() {

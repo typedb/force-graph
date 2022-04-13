@@ -4,6 +4,7 @@ import com.vaticle.force.graph.api.Force;
 import com.vaticle.force.graph.api.Vertex;
 import com.vaticle.force.graph.quadtree.Quadtree;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -31,11 +32,16 @@ public class CollideForce<VERTEX_ID extends Comparable<VERTEX_ID>> implements Fo
 
     @Override
     public void apply(double alpha) {
+        apply(verticesIndexed.keySet(), alpha);
+    }
+
+    @Override
+    public void apply(Collection<Vertex> vertexPartition, double alpha) {
         Quadtree<Vertex> tree = new Quadtree<>(verticesIndexed.keySet(), x, y);
         quadRadii = new HashMap<>();
         tree.visitAfter(this::prepare);
 
-        for (Vertex vertex : verticesIndexed.keySet()) {
+        for (Vertex vertex : vertexPartition) {
             double ri = radius; double ri2 = ri * ri;
             double xi = vertex.x() + vertex.vx();
             double yi = vertex.y() + vertex.vy();
