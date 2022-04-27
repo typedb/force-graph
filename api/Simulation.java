@@ -9,6 +9,7 @@ import com.vaticle.force.graph.force.YForce;
 import com.vaticle.force.graph.impl.BasicSimulation;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Supplier;
 
 public interface Simulation {
@@ -47,9 +48,9 @@ public interface Simulation {
 
         CenterForce addCenterForce(Collection<Vertex> vertices, double x, double y, double strength);
 
-        CollideForce<Integer> addCollideForce(Collection<Vertex> vertices, double radius);
+        CollideForce addCollideForce(List<Vertex> vertices, double radius);
 
-        CollideForce<Integer> addCollideForce(Collection<Vertex> vertices, double radius, double strength);
+        CollideForce addCollideForce(List<Vertex> vertices, double radius, double strength);
 
         LinkForce addLinkForce(Collection<Vertex> vertices, Collection<Edge> edges, double distance);
 
