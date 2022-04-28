@@ -14,7 +14,7 @@ public class LinkForce extends BaseForce {
     final Collection<Edge> edges;
     final double baseStrength;
     double distance;
-    Map<Vertex, Integer> count;
+    Map<Vertex, Integer> edgeCounts;
     Map<Edge, Double> bias;
     Map<Edge, Double> strengths;
     Random random;
@@ -30,21 +30,19 @@ public class LinkForce extends BaseForce {
 
     @Override
     public void onVerticesChanged() {
-        count = new HashMap<>();
+        edgeCounts = new HashMap<>();
         bias = new HashMap<>();
         strengths = new HashMap<>();
 
         if (vertices().isEmpty()) return;
 
         for (Edge edge : edges) {
-            count.putIfAbsent(edge.source(), 0);
-            count.put(edge.source(), count.get(edge.source()) + 1);
-            count.putIfAbsent(edge.target(), 0);
-            count.put(edge.target(), count.get(edge.target()) + 1);
-
-            bias.put(edge, (double) count.get(edge.source()) / (count.get(edge.source()) + count.get(edge.target())));
-
-            strengths.put(edge, baseStrength / Math.min(count.get(edge.source()), count.get(edge.target())));
+            edgeCounts.merge(edge.source(), 1, Integer::sum);
+            edgeCounts.merge(edge.target(), 1, Integer::sum);
+        }
+        for (Edge edge : edges) {
+            bias.put(edge, (double) edgeCounts.get(edge.source()) / (edgeCounts.get(edge.source()) + edgeCounts.get(edge.target())));
+            strengths.put(edge, baseStrength / Math.min(edgeCounts.get(edge.source()), edgeCounts.get(edge.target())));
         }
     }
 

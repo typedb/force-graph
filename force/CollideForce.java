@@ -14,9 +14,11 @@ import java.util.function.Function;
 import static com.vaticle.force.graph.util.RandomEffects.jiggle;
 
 public class CollideForce implements Force {
+    // TODO: just make Force.vertices() be a List<Vertex> so we can extend BaseForce
     private final List<Vertex> vertexList;
     private final double radius;
     private Map<Quadtree<Vertex>.Node, Double> quadRadii;
+    private Quadtree<Vertex> tree;
     private final Function<Vertex, Double> x;
     private final Function<Vertex, Double> y;
     double strength;
@@ -31,16 +33,20 @@ public class CollideForce implements Force {
         random = new Random();
     }
 
+    public void buildQuadtree() {
+        tree = new Quadtree<>(vertexList, x, y);
+        quadRadii = new HashMap<>();
+        tree.visitAfter(this::prepare);
+    }
+
     @Override
     public void apply(double alpha) {
-        apply(verticesIndexed.keySet(), alpha);
+        buildQuadtree();
+        apply(vertexList, alpha);
     }
 
     @Override
     public void apply(Collection<Vertex> vertexPartition, double alpha) {
-        Quadtree<Vertex> tree = new Quadtree<>(verticesIndexed.keySet(), x, y);
-        quadRadii = new HashMap<>();
-        tree.visitAfter(this::prepare);
         Map<Vertex, Integer> vertexIndices = new HashMap<>();
         for (int i = 0; i < vertexList.size(); i++) {
             vertexIndices.put(vertexList.get(i), i);
@@ -55,7 +61,7 @@ public class CollideForce implements Force {
                 double rj = quadRadii.get(quad.node);
                 double r = ri + rj;
                 if (data != null) {
-                    if (vertexIndices.get(data).compareTo(index) > 0) {
+                    if (vertexIndices.get(data).compareTo(vertexIndices.get(vertex)) > 0) {
                         double x = xi - data.x() - data.vx();
                         double y = yi - data.y() - data.vy();
                         double len = x*x + y*y;

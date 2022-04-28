@@ -16,6 +16,7 @@ public class ManyBodyForce extends BaseForce {
     double distanceMax2;
     double theta2;
     private Map<Quadtree<Vertex>.Node, QuadData> quads;
+    private Quadtree<Vertex> tree;
     Random random;
 
     public ManyBodyForce(Collection<Vertex> vertices, double strength, double distanceMax) {
@@ -27,12 +28,20 @@ public class ManyBodyForce extends BaseForce {
         random = new Random();
     }
 
-    @Override
-    public void apply(Collection<Vertex> vertexPartition, double alpha) {
-        Quadtree<Vertex> tree = new Quadtree<>(vertices(), Vertex::x, Vertex::y);
+    public void buildQuadtree() {
+        tree = new Quadtree<>(vertices(), Vertex::x, Vertex::y);
         quads = new HashMap<>();
         tree.visitAfter(this::accumulate);
+    }
 
+    @Override
+    public void apply(double alpha) {
+        buildQuadtree();
+        super.apply(alpha);
+    }
+
+    @Override
+    public void apply(Collection<Vertex> vertexPartition, double alpha) {
         for (Vertex vertex : vertexPartition) {
             tree.visit(quad -> {
                 QuadData q = quads.get(quad.node);

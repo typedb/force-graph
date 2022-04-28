@@ -34,7 +34,9 @@ import com.vaticle.force.graph.force.YForce;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,6 +45,7 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -59,7 +62,7 @@ public class BasicSimulation implements Simulation {
     private double alphaTarget;
     private double velocityDecay;
     private final Forces forces;
-    private final ConcurrentMap<Vertex, Integer> verticesIndexed;
+    private final List<Vertex> vertices;
     private final AtomicInteger nextNodeID;
 
     private static final int INITIAL_PLACEMENT_RADIUS = 10;
@@ -73,13 +76,13 @@ public class BasicSimulation implements Simulation {
         alphaTarget = 0;
         velocityDecay = 0.6;
         forces = new Forces();
-        verticesIndexed = new ConcurrentHashMap<>();
+        vertices = Collections.synchronizedList(new ArrayList<>());
         nextNodeID = new AtomicInteger();
     }
 
     @Override
     public Collection<Vertex> vertices() {
-        return verticesIndexed.keySet();
+        return vertices;
     }
 
     @Override
@@ -119,7 +122,7 @@ public class BasicSimulation implements Simulation {
         double angle = id * INITIAL_PLACEMENT_ANGLE;
         vertex.x(vertex.x() + (vertex.isXFixed() ? 0 : radius * Math.cos(angle)));
         vertex.y(vertex.y() + (vertex.isYFixed() ? 0 : radius * Math.sin(angle)));
-        verticesIndexed.put(vertex, id);
+        vertices.add(vertex);
     }
 
     @Override
@@ -180,49 +183,47 @@ public class BasicSimulation implements Simulation {
     @Override
     public synchronized void clear() {
         forces.clear();
-        verticesIndexed.clear();
+        vertices.clear();
         nextNodeID.set(0);
     }
 
     public class Forces implements Simulation.Forces {
         final Collection<Force> forces;
-        private static final int VERTEX_PARTITION_SIZE = 500;
-        private final ExecutorCompletionService<Void> executor;
+        private final ExecutorService executor;
+        private final int threadCount;
 
         Forces() {
             forces = new ArrayList<>();
-            ExecutorService executorService = new ForkJoinPool(16);
-            executor = new ExecutorCompletionService<>(executorService);
+            threadCount = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
+            executor = Executors.newFixedThreadPool(threadCount);
         }
 
-        synchronized void applyAll() {
-            int submittedTaskCount = 0;
-            Collection<Collection<Vertex>> vertexPartitions = new ArrayList<>();
-            Iterator<Vertex> vertexIterator = vertices().iterator();
-            Collection<Vertex> currentPartition = new ArrayList<>();
-            vertexPartitions.add(currentPartition);
-            while (vertexIterator.hasNext()) {
-                currentPartition.add(vertexIterator.next());
-                if (currentPartition.size() == VERTEX_PARTITION_SIZE) {
-                    currentPartition = new ArrayList<>();
-                    vertexPartitions.add(currentPartition);
-                }
-            }
+        void applyAll() {
+//            forces.forEach(force -> force.apply(alpha));
             for (Force force : forces) {
-                if (force instanceof ManyBodyForce || force instanceof CollideForce) {
-                    for (Collection<Vertex> vertexPartition : vertexPartitions) {
-                        executor.submit(() -> {
-                            force.apply(vertexPartition, alpha);
-                            return null;
-                        });
-                        submittedTaskCount++;
-                    }
-                }
+                if (force instanceof CollideForce) ((CollideForce) force).buildQuadtree();
+                else if (force instanceof ManyBodyForce) ((ManyBodyForce) force).buildQuadtree();
             }
-            try {
-                for (int i = 0; i < submittedTaskCount; i++) executor.take();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+
+            int taskCount = 8 * threadCount; // We make more tasks than threads because some tasks may need more time to compute.
+            ArrayList<Future<?>> threads = new ArrayList<>();
+            for (int t = taskCount; t > 0; t--) {
+                int from = (int) Math.floor(vertices().size() * (t - 1) / taskCount);
+                int to = (int) Math.floor(vertices().size() * t / taskCount);
+                Future<?> future = executor.submit(() -> {
+                    final List<Vertex> vertexPartition = vertices.subList(from, to);
+                    for (Force force : forces) {
+                        if (force instanceof ManyBodyForce || force instanceof CollideForce) force.apply(vertexPartition, alpha);
+                    }
+                });
+                threads.add(future);
+            }
+            for (Future<?> future : threads) {
+                try {
+                    future.get();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
             for (Force force : forces) {
                 if (!(force instanceof ManyBodyForce) && !(force instanceof CollideForce)) {
@@ -238,6 +239,10 @@ public class BasicSimulation implements Simulation {
         void add(Force force) {
             forces.add(requireNonNull(force));
             force.onVerticesChanged();
+        }
+
+        public int threadCount() {
+            return threadCount;
         }
 
         @Override

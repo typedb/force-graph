@@ -19,7 +19,7 @@ public class CenterForce extends BaseForce {
     @Override
     public void apply(Collection<Vertex> vertexPartition, double alpha) {
         double sx = 0, sy = 0;
-        for (Vertex vertex : vertexPartition) {
+        for (Vertex vertex : vertices()) {
             sx += vertex.x(); sy += vertex.y();
         }
         int n = vertices().size();
