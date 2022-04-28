@@ -7,5 +7,5 @@ public interface Force {
 
     void apply(Collection<Vertex> vertexPartition, double alpha);
 
-    default void onVerticesChanged() {}
+    default void onGraphChanged() {}
 }

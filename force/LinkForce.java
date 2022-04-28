@@ -25,11 +25,11 @@ public class LinkForce extends BaseForce {
         this.baseStrength = strength;
         this.distance = distance;
         random = new Random();
-        onVerticesChanged();
+        onGraphChanged();
     }
 
     @Override
-    public void onVerticesChanged() {
+    public void onGraphChanged() {
         edgeCounts = new HashMap<>();
         bias = new HashMap<>();
         strengths = new HashMap<>();

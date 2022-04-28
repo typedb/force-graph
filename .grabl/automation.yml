@@ -29,3 +29,8 @@ build:
       image: vaticle-ubuntu-20.04
       command: |
         bazel build //...
+    test-benchmark:
+      image: vaticle-ubuntu-20.04
+      machine: 4-core-8-gb
+      command: |
+        bazel test //benchmark/... --test_output=streamed

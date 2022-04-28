@@ -9,6 +9,10 @@ public class CenterForce extends BaseForce {
     double y;
     double strength;
 
+    public CenterForce(Collection<Vertex> vertices, double x, double y) {
+        this(vertices, x, y, 1);
+    }
+
     public CenterForce(Collection<Vertex> vertices, double x, double y, double strength) {
         super(vertices);
         this.x = x;

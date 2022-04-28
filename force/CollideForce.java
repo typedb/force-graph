@@ -24,6 +24,10 @@ public class CollideForce implements Force {
     double strength;
     Random random;
 
+    public CollideForce(List<Vertex> vertexList, double radius) {
+        this(vertexList, radius, 1);
+    }
+
     public CollideForce(List<Vertex> vertexList, double radius, double strength) {
         this.vertexList = vertexList;
         this.radius = radius;

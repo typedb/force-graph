@@ -21,39 +21,22 @@
 
 package com.vaticle.force.graph.impl;
 
-import com.vaticle.force.graph.api.Edge;
 import com.vaticle.force.graph.api.Vertex;
 import com.vaticle.force.graph.api.Simulation;
 import com.vaticle.force.graph.api.Force;
-import com.vaticle.force.graph.force.CenterForce;
 import com.vaticle.force.graph.force.CollideForce;
-import com.vaticle.force.graph.force.LinkForce;
 import com.vaticle.force.graph.force.ManyBodyForce;
-import com.vaticle.force.graph.force.XForce;
-import com.vaticle.force.graph.force.YForce;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
 
-import static com.vaticle.force.graph.util.StandardFunctions.constant;
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.toMap;
 
 public class BasicSimulation implements Simulation {
     private double alpha;
@@ -62,12 +45,12 @@ public class BasicSimulation implements Simulation {
     private double alphaTarget;
     private double velocityDecay;
     private final Forces forces;
+    private final Forces localForces;
     private final List<Vertex> vertices;
     private final AtomicInteger nextNodeID;
 
     private static final int INITIAL_PLACEMENT_RADIUS = 10;
     private static final double INITIAL_PLACEMENT_ANGLE = Math.PI * (3 - Math.sqrt(5));
-    private static final double DEFAULT_FORCE_STRENGTH = 1;
 
     public BasicSimulation() {
         alpha = 1;
@@ -75,8 +58,9 @@ public class BasicSimulation implements Simulation {
         alphaDecay = 1 - Math.pow(alphaMin, 1.0 / 300);
         alphaTarget = 0;
         velocityDecay = 0.6;
-        forces = new Forces();
         vertices = Collections.synchronizedList(new ArrayList<>());
+        forces = Forces.global(vertices);
+        localForces = Forces.local();
         nextNodeID = new AtomicInteger();
     }
 
@@ -91,10 +75,16 @@ public class BasicSimulation implements Simulation {
     }
 
     @Override
+    public Simulation.Forces localForces() {
+        return localForces;
+    }
+
+    @Override
     public synchronized void tick() {
         alpha += (alphaTarget - alpha) * alphaDecay;
 
-        forces.applyAll();
+        forces.applyAll(alpha);
+        localForces.applyAll(alpha);
 
         for (Vertex vertex : vertices()) {
             if (vertex.isXFixed()) vertex.vx(0);
@@ -113,7 +103,8 @@ public class BasicSimulation implements Simulation {
     @Override
     public synchronized void placeVertices(Collection<Vertex> vertices) {
         vertices.forEach(this::placeNode);
-        forces.onVerticesChanged();
+        forces.onGraphChanged();
+        localForces.onGraphChanged();
     }
 
     protected void placeNode(Vertex vertex) {
@@ -187,29 +178,62 @@ public class BasicSimulation implements Simulation {
         nextNodeID.set(0);
     }
 
-    public class Forces implements Simulation.Forces {
+    public static class Forces implements Simulation.Forces {
         final Collection<Force> forces;
-        private final ExecutorService executor;
+        final List<Vertex> vertices;
+        private final boolean isLocal;
         private final int threadCount;
+        private final ExecutorService executor;
 
-        Forces() {
+        private Forces(List<Vertex> vertices, boolean isLocal) {
             forces = new ArrayList<>();
-            threadCount = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
-            executor = Executors.newFixedThreadPool(threadCount);
+            this.vertices = vertices;
+            this.isLocal = isLocal;
+            if (isLocal) {
+                threadCount = 1;
+                executor = null;
+            } else {
+                threadCount = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
+                executor = Executors.newFixedThreadPool(threadCount);
+            }
         }
 
-        void applyAll() {
-//            forces.forEach(force -> force.apply(alpha));
+        static Forces global(List<Vertex> vertices) {
+            return new Forces(vertices, false);
+        }
+
+        static Forces local() {
+            return new Forces(null, true);
+        }
+
+        void applyAll(double alpha) {
+            if (isLocal) applyAllSerial(alpha);
+            else applyAllParallel(alpha);
+        }
+
+        private void applyAllSerial(double alpha) {
+            forces.forEach(force -> force.apply(alpha));
+        }
+
+        private void applyAllParallel(double alpha) {
+            buildQuadtrees();
+            applyInterBodyForcesParallel(alpha);
+            applySingleBodyForces(alpha);
+        }
+
+        private void buildQuadtrees() {
             for (Force force : forces) {
                 if (force instanceof CollideForce) ((CollideForce) force).buildQuadtree();
                 else if (force instanceof ManyBodyForce) ((ManyBodyForce) force).buildQuadtree();
             }
+        }
 
+        private void applyInterBodyForcesParallel(double alpha) {
             int taskCount = 8 * threadCount; // We make more tasks than threads because some tasks may need more time to compute.
             ArrayList<Future<?>> threads = new ArrayList<>();
             for (int t = taskCount; t > 0; t--) {
-                int from = (int) Math.floor(vertices().size() * (t - 1) / taskCount);
-                int to = (int) Math.floor(vertices().size() * t / taskCount);
+                int from = (int) Math.floor(vertices.size() * (t - 1) / taskCount);
+                int to = (int) Math.floor(vertices.size() * t / taskCount);
                 Future<?> future = executor.submit(() -> {
                     final List<Vertex> vertexPartition = vertices.subList(from, to);
                     for (Force force : forces) {
@@ -225,6 +249,9 @@ public class BasicSimulation implements Simulation {
                     throw new RuntimeException(e);
                 }
             }
+        }
+
+        private void applySingleBodyForces(double alpha) {
             for (Force force : forces) {
                 if (!(force instanceof ManyBodyForce) && !(force instanceof CollideForce)) {
                     force.apply(alpha);
@@ -232,98 +259,13 @@ public class BasicSimulation implements Simulation {
             }
         }
 
-        void onVerticesChanged() {
-            forces.forEach(Force::onVerticesChanged);
+        void onGraphChanged() {
+            forces.forEach(Force::onGraphChanged);
         }
 
-        void add(Force force) {
+        public <FORCE extends Force> FORCE add(FORCE force) {
             forces.add(requireNonNull(force));
-            force.onVerticesChanged();
-        }
-
-        public int threadCount() {
-            return threadCount;
-        }
-
-        @Override
-        public CenterForce addCenterForce(Collection<Vertex> vertices, double x, double y) {
-            return addCenterForce(vertices, x, y, DEFAULT_FORCE_STRENGTH);
-        }
-
-        @Override
-        public CenterForce addCenterForce(Collection<Vertex> vertices, double x, double y, double strength) {
-            CenterForce force = new CenterForce(vertices, x, y, strength);
-            add(force);
-            return force;
-        }
-
-        @Override
-        public CollideForce addCollideForce(List<Vertex> vertices, double radius) {
-            return addCollideForce(vertices, radius, DEFAULT_FORCE_STRENGTH);
-        }
-
-        @Override
-        public CollideForce addCollideForce(List<Vertex> vertices, double radius, double strength) {
-            CollideForce force = new CollideForce(vertices, radius, strength);
-            add(force);
-            return force;
-        }
-
-        @Override
-        public LinkForce addLinkForce(Collection<Vertex> vertices, Collection<Edge> edges, double distance) {
-            return addLinkForce(vertices, edges, distance, DEFAULT_FORCE_STRENGTH);
-        }
-
-        @Override
-        public LinkForce addLinkForce(Collection<Vertex> vertices, Collection<Edge> edges, double distance, double strength) {
-            LinkForce force = new LinkForce(vertices, edges, distance, strength);
-            add(force);
-            return force;
-        }
-
-        @Override
-        public ManyBodyForce addManyBodyForce(Collection<Vertex> vertices, double strength) {
-            return addManyBodyForce(vertices, strength, Math.sqrt(Double.MAX_VALUE));
-        }
-
-        @Override
-        public ManyBodyForce addManyBodyForce(Collection<Vertex> vertices, double strength, double distanceMax) {
-            ManyBodyForce force = new ManyBodyForce(vertices, strength, distanceMax);
-            add(force);
-            return force;
-        }
-
-        @Override
-        public XForce addXForce(Collection<Vertex> vertices, double x) {
-            return addXForce(vertices, x, DEFAULT_FORCE_STRENGTH);
-        }
-
-        @Override
-        public XForce addXForce(Collection<Vertex> vertices, double x, double strength) {
-            return addXForce(vertices, constant(x), strength);
-        }
-
-        @Override
-        public XForce addXForce(Collection<Vertex> vertices, Supplier<Double> x, double strength) {
-            XForce force = new XForce(vertices, x, strength);
-            add(force);
-            return force;
-        }
-
-        @Override
-        public YForce addYForce(Collection<Vertex> vertices, double y) {
-            return addYForce(vertices, y, DEFAULT_FORCE_STRENGTH);
-        }
-
-        @Override
-        public YForce addYForce(Collection<Vertex> vertices, double y, double strength) {
-            return addYForce(vertices, constant(y), strength);
-        }
-
-        @Override
-        public YForce addYForce(Collection<Vertex> vertices, Supplier<Double> y, double strength) {
-            YForce force = new YForce(vertices, y, strength);
-            add(force);
+            force.onGraphChanged();
             return force;
         }
 

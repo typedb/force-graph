@@ -19,6 +19,10 @@ public class ManyBodyForce extends BaseForce {
     private Quadtree<Vertex> tree;
     Random random;
 
+    public ManyBodyForce(Collection<Vertex> vertices, double strength) {
+        this(vertices, strength, Math.sqrt(Double.MAX_VALUE));
+    }
+
     public ManyBodyForce(Collection<Vertex> vertices, double strength, double distanceMax) {
         super(vertices);
         this.strength = strength;
