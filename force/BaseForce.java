@@ -15,4 +15,9 @@ public abstract class BaseForce implements Force {
     protected Collection<Vertex> vertices() {
         return vertices;
     }
+
+    @Override
+    public void apply(double alpha) {
+        apply(vertices(), alpha);
+    }
 }

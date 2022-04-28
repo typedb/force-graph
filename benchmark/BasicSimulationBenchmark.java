@@ -3,7 +3,9 @@ package com.vaticle.force.graph.benchmark;
 import com.vaticle.force.graph.api.Edge;
 import com.vaticle.force.graph.api.Simulation;
 import com.vaticle.force.graph.api.Vertex;
+import com.vaticle.force.graph.force.CollideForce;
 import com.vaticle.force.graph.force.LinkForce;
+import com.vaticle.force.graph.force.ManyBodyForce;
 import com.vaticle.force.graph.impl.BasicEdge;
 import com.vaticle.force.graph.impl.BasicSimulation;
 import com.vaticle.force.graph.impl.BasicVertex;
@@ -24,9 +26,9 @@ public class BasicSimulationBenchmark {
         final Simulation simulation = new BasicSimulation();
         simulation.alphaMin(0.01);
         simulation.placeVertices(vertices);
-        simulation.forces().addCollideForce(vertices, 80.0);
-        simulation.forces().addManyBodyForce(vertices, -500.0);
-        simulation.forces().addLinkForce(vertices, edges, 100, 1);
+        simulation.forces().add(new CollideForce(vertices, 80.0));
+        simulation.forces().add(new ManyBodyForce(vertices, -500.0));
+        simulation.forces().add(new LinkForce(vertices, edges, 100, 1));
         int iteration = 0;
         System.out.println("-- STAR GRAPH ---\n");
         final Instant simulationStart = Instant.now();
@@ -36,8 +38,7 @@ public class BasicSimulationBenchmark {
             System.out.printf("star_graph iteration %d: alpha = %.3f, alphaMin = %.3f, vertices[1729].x = %.3f, execution time = %dms%n", iteration, simulation.alpha(), simulation.alphaMin(), vertices.get(1729).x(), Duration.between(tickStart, Instant.now()).toMillis());
             iteration++;
         }
-        System.out.println();
-        System.out.printf("star_graph total runtime: %dms%n", Duration.between(simulationStart, Instant.now()).toMillis());
+        System.out.printf("%nstar_graph total runtime: %dms%n", Duration.between(simulationStart, Instant.now()).toMillis());
     }
 
     @Test
@@ -49,9 +50,10 @@ public class BasicSimulationBenchmark {
         final Simulation simulation = new BasicSimulation();
         simulation.alphaMin(0.01);
         simulation.placeVertices(vertices);
-        simulation.forces().addCollideForce(vertices, 80.0);
-        simulation.forces().addManyBodyForce(vertices, -500.0);
-        LinkForce linkForce = simulation.forces().addLinkForce(vertices, edges, 100, 1);
+        simulation.forces().add(new CollideForce(vertices, 80.0));
+        simulation.forces().add(new ManyBodyForce(vertices, -500.0));
+        LinkForce linkForce = new LinkForce(vertices, edges, 100, 1);
+        simulation.forces().add(linkForce);
         int iteration = 0;
         System.out.println("-- INCREMENTAL STAR GRAPH ---\n");
         final Instant simulationStart = Instant.now();
@@ -69,11 +71,8 @@ public class BasicSimulationBenchmark {
                 }
                 vertices.addAll(newVertices);
                 simulation.placeVertices(newVertices);
-                simulation.forces().remove(linkForce);
-                linkForce = simulation.forces().addLinkForce(vertices, edges, 100, 1);
             }
         }
-        System.out.println();
-        System.out.printf("incremental_star_graph total runtime: %dms%n", Duration.between(simulationStart, Instant.now()).toMillis());
+        System.out.printf("%nincremental_star_graph total runtime: %dms%n", Duration.between(simulationStart, Instant.now()).toMillis());
     }
 }
