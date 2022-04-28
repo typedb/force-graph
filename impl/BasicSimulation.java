@@ -53,13 +53,17 @@ public class BasicSimulation implements Simulation {
     private static final double INITIAL_PLACEMENT_ANGLE = Math.PI * (3 - Math.sqrt(5));
 
     public BasicSimulation() {
+        this(Math.max(1, Runtime.getRuntime().availableProcessors() - 1));
+    }
+
+    public BasicSimulation(int parallelism) {
         alpha = 1;
         alphaMin = 0.001;
         alphaDecay = 1 - Math.pow(alphaMin, 1.0 / 300);
         alphaTarget = 0;
         velocityDecay = 0.6;
         vertices = Collections.synchronizedList(new ArrayList<>());
-        forces = Forces.global(vertices);
+        forces = Forces.global(vertices, parallelism);
         localForces = Forces.local();
         nextNodeID = new AtomicInteger();
     }
@@ -185,25 +189,20 @@ public class BasicSimulation implements Simulation {
         private final int threadCount;
         private final ExecutorService executor;
 
-        private Forces(List<Vertex> vertices, boolean isLocal) {
+        private Forces(List<Vertex> vertices, boolean isLocal, int parallelism) {
             forces = new ArrayList<>();
             this.vertices = vertices;
             this.isLocal = isLocal;
-            if (isLocal) {
-                threadCount = 1;
-                executor = null;
-            } else {
-                threadCount = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
-                executor = Executors.newFixedThreadPool(threadCount);
-            }
+            threadCount = parallelism;
+            executor = isLocal ? null : Executors.newFixedThreadPool(threadCount);
         }
 
-        static Forces global(List<Vertex> vertices) {
-            return new Forces(vertices, false);
+        static Forces global(List<Vertex> vertices, int parallelism) {
+            return new Forces(vertices, false, parallelism);
         }
 
         static Forces local() {
-            return new Forces(null, true);
+            return new Forces(null, true, 1);
         }
 
         void applyAll(double alpha) {
@@ -230,7 +229,7 @@ public class BasicSimulation implements Simulation {
 
         private void applyInterBodyForcesParallel(double alpha) {
             int taskCount = 8 * threadCount; // We make more tasks than threads because some tasks may need more time to compute.
-            ArrayList<Future<?>> threads = new ArrayList<>();
+            ArrayList<Future<?>> futures = new ArrayList<>();
             for (int t = taskCount; t > 0; t--) {
                 int from = (int) Math.floor(vertices.size() * (t - 1) / taskCount);
                 int to = (int) Math.floor(vertices.size() * t / taskCount);
@@ -240,9 +239,9 @@ public class BasicSimulation implements Simulation {
                         if (force instanceof ManyBodyForce || force instanceof CollideForce) force.apply(vertexPartition, alpha);
                     }
                 });
-                threads.add(future);
+                futures.add(future);
             }
-            for (Future<?> future : threads) {
+            for (Future<?> future : futures) {
                 try {
                     future.get();
                 } catch (Exception e) {
