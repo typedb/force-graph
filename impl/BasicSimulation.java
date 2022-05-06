@@ -34,11 +34,11 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.Objects.requireNonNull;
 
 public class BasicSimulation implements Simulation {
+
     private double alpha;
     private double alphaMin;
     private double alphaDecay;
@@ -47,7 +47,6 @@ public class BasicSimulation implements Simulation {
     private final Forces forces;
     private final Forces localForces;
     private final List<Vertex> vertices;
-    private final AtomicInteger nextNodeID;
 
     private static final int INITIAL_PLACEMENT_RADIUS = 10;
     private static final double INITIAL_PLACEMENT_ANGLE = Math.PI * (3 - Math.sqrt(5));
@@ -65,21 +64,20 @@ public class BasicSimulation implements Simulation {
         vertices = Collections.synchronizedList(new ArrayList<>());
         forces = Forces.global(vertices, parallelism);
         localForces = Forces.local();
-        nextNodeID = new AtomicInteger();
     }
 
     @Override
-    public Collection<Vertex> vertices() {
+    public Collection<Vertex> getVertices() {
         return vertices;
     }
 
     @Override
-    public Simulation.Forces forces() {
+    public Simulation.Forces getForces() {
         return forces;
     }
 
     @Override
-    public Simulation.Forces localForces() {
+    public Simulation.Forces getLocalForces() {
         return localForces;
     }
 
@@ -90,87 +88,86 @@ public class BasicSimulation implements Simulation {
         forces.applyAll(alpha);
         localForces.applyAll(alpha);
 
-        for (Vertex vertex : vertices()) {
-            if (vertex.isXFixed()) vertex.vx(0);
+        for (Vertex vertex : getVertices()) {
+            if (vertex.isXFixed()) vertex.setVX(0);
             else {
-                vertex.vx(vertex.vx() * velocityDecay);
-                vertex.x(vertex.x() + vertex.vx());
+                vertex.setVX(vertex.getVX() * velocityDecay);
+                vertex.setX(vertex.getX() + vertex.getVX());
             }
-            if (vertex.isYFixed()) vertex.vy(0);
+            if (vertex.isYFixed()) vertex.setVY(0);
             else {
-                vertex.vy(vertex.vy() * velocityDecay);
-                vertex.y(vertex.y() + vertex.vy());
+                vertex.setVY(vertex.getVY() * velocityDecay);
+                vertex.setY(vertex.getY() + vertex.getVY());
             }
         }
     }
 
     @Override
-    public synchronized void placeVertices(Collection<Vertex> vertices) {
-        vertices.forEach(this::placeNode);
-        forces.onGraphChanged();
-        localForces.onGraphChanged();
+    public void placeVertices(Collection<Vertex> vertices) {
+        vertices.forEach(this::placeVertex);
     }
 
-    protected void placeNode(Vertex vertex) {
-        int id = nextNodeID.getAndIncrement();
+    @Override
+    public synchronized void placeVertex(Vertex vertex) {
+        int id = vertices.size();
         double radius = INITIAL_PLACEMENT_RADIUS * Math.sqrt(0.5 + id);
         double angle = id * INITIAL_PLACEMENT_ANGLE;
-        vertex.x(vertex.x() + (vertex.isXFixed() ? 0 : radius * Math.cos(angle)));
-        vertex.y(vertex.y() + (vertex.isYFixed() ? 0 : radius * Math.sin(angle)));
+        vertex.setX(vertex.getX() + (vertex.isXFixed() ? 0 : radius * Math.cos(angle)));
+        vertex.setY(vertex.getY() + (vertex.isYFixed() ? 0 : radius * Math.sin(angle)));
         vertices.add(vertex);
     }
 
     @Override
-    public double alpha() {
+    public double getAlpha() {
         return alpha;
     }
 
     @Override
-    public BasicSimulation alpha(double value) {
+    public BasicSimulation setAlpha(double value) {
         alpha = value;
         return this;
     }
 
     @Override
-    public double alphaMin() {
+    public double getAlphaMin() {
         return alphaMin;
     }
 
     @Override
-    public BasicSimulation alphaMin(double value) {
+    public BasicSimulation setAlphaMin(double value) {
         alphaMin = value;
         return this;
     }
 
     @Override
-    public double alphaDecay() {
+    public double getAlphaDecay() {
         return alphaDecay;
     }
 
     @Override
-    public BasicSimulation alphaDecay(double value) {
+    public BasicSimulation setAlphaDecay(double value) {
         alphaDecay = value;
         return this;
     }
 
     @Override
-    public double alphaTarget() {
+    public double getAlphaTarget() {
         return alphaTarget;
     }
 
     @Override
-    public BasicSimulation alphaTarget(double value) {
+    public BasicSimulation setAlphaTarget(double value) {
         alphaTarget = value;
         return this;
     }
 
     @Override
-    public double velocityDecay() {
+    public double getVelocityDecay() {
         return velocityDecay;
     }
 
     @Override
-    public BasicSimulation velocityDecay(double value) {
+    public BasicSimulation setVelocityDecay(double value) {
         velocityDecay = value;
         return this;
     }
@@ -179,7 +176,6 @@ public class BasicSimulation implements Simulation {
     public synchronized void clear() {
         forces.clear();
         vertices.clear();
-        nextNodeID.set(0);
     }
 
     public static class Forces implements Simulation.Forces {
@@ -258,13 +254,8 @@ public class BasicSimulation implements Simulation {
             }
         }
 
-        void onGraphChanged() {
-            forces.forEach(Force::onGraphChanged);
-        }
-
         public <FORCE extends Force> FORCE add(FORCE force) {
             forces.add(requireNonNull(force));
-            force.onGraphChanged();
             return force;
         }
 

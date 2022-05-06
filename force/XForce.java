@@ -28,7 +28,7 @@ public class XForce extends BaseForce {
     @Override
     public void apply(Collection<Vertex> vertexPartition, double alpha) {
         for (Vertex vertex : vertexPartition) {
-            vertex.vx(vertex.vx() + (x.get() - vertex.x()) * strength * alpha);
+            vertex.setVX(vertex.getVX() + (x.get() - vertex.getX()) * strength * alpha);
         }
     }
 }

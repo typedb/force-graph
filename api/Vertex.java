@@ -5,19 +5,23 @@ public interface Vertex {
 
     boolean isYFixed();
 
-    double x();
+    void setXFixed(boolean value);
 
-    void x(double value);
+    void setYFixed(boolean value);
 
-    double y();
+    double getX();
 
-    void y(double value);
+    void setX(double value);
 
-    double vx();
+    double getY();
 
-    void vx(double value);
+    void setY(double value);
 
-    double vy();
+    double getVX();
 
-    void vy(double value);
+    void setVX(double value);
+
+    double getVY();
+
+    void setVY(double value);
 }

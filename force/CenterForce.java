@@ -24,13 +24,13 @@ public class CenterForce extends BaseForce {
     public void apply(Collection<Vertex> vertexPartition, double alpha) {
         double sx = 0, sy = 0;
         for (Vertex vertex : vertices()) {
-            sx += vertex.x(); sy += vertex.y();
+            sx += vertex.getX(); sy += vertex.getY();
         }
         int n = vertices().size();
         sx = (sx / n - x) * strength;
         sy = (sy / n - y) * strength;
         for (Vertex vertex : vertexPartition) {
-            vertex.x(vertex.x() - sx); vertex.y(vertex.y() - sy);
+            vertex.setX(vertex.getX() - sx); vertex.setY(vertex.getY() - sy);
         }
     }
 }

@@ -32,8 +32,8 @@ public class CollideForce implements Force {
         this.vertexList = vertexList;
         this.radius = radius;
         this.strength = strength;
-        x = node -> node.x() + node.vx();
-        y = node -> node.y() + node.vy();
+        x = node -> node.getX() + node.getVX();
+        y = node -> node.getY() + node.getVY();
         random = new Random();
     }
 
@@ -58,16 +58,16 @@ public class CollideForce implements Force {
 
         for (Vertex vertex : vertexPartition) {
             double ri = radius; double ri2 = ri * ri;
-            double xi = vertex.x() + vertex.vx();
-            double yi = vertex.y() + vertex.vy();
+            double xi = vertex.getX() + vertex.getVX();
+            double yi = vertex.getY() + vertex.getVY();
             tree.visit(quad -> {
                 Vertex data = quad.node.data;
                 double rj = quadRadii.get(quad.node);
                 double r = ri + rj;
                 if (data != null) {
                     if (vertexIndices.get(data).compareTo(vertexIndices.get(vertex)) > 0) {
-                        double x = xi - data.x() - data.vx();
-                        double y = yi - data.y() - data.vy();
+                        double x = xi - data.getX() - data.getVX();
+                        double y = yi - data.getY() - data.getVY();
                         double len = x*x + y*y;
                         if (len < r*r) {
                             if (x == 0) {
@@ -82,11 +82,11 @@ public class CollideForce implements Force {
                             len = (r - len) / len * strength;
                             x *= len; y *= len; rj *= rj;
                             r = rj / (ri2 + rj);
-                            vertex.vx(vertex.vx() + x * r);
-                            vertex.vy(vertex.vy() + y * r);
+                            vertex.setVX(vertex.getVX() + x * r);
+                            vertex.setVY(vertex.getVY() + y * r);
                             r = 1 - r;
-                            data.vx(data.vx() - x * r);
-                            data.vy(data.vy() - y * r);
+                            data.setVX(data.getVX() - x * r);
+                            data.setVY(data.getVY() - y * r);
                         }
                     }
                     return false;

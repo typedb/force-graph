@@ -5,35 +5,37 @@ import com.vaticle.force.graph.impl.BasicSimulation;
 import java.util.Collection;
 
 public interface Simulation {
-    Collection<Vertex> vertices();
+    Collection<Vertex> getVertices();
 
-    Forces forces();
+    Forces getForces();
 
-    Forces localForces();
+    Forces getLocalForces();
 
     void placeVertices(Collection<Vertex> vertices);
 
+    void placeVertex(Vertex vertex);
+
     void tick();
 
-    double alpha();
+    double getAlpha();
 
-    BasicSimulation alpha(double value);
+    BasicSimulation setAlpha(double value);
 
-    double alphaMin();
+    double getAlphaMin();
 
-    BasicSimulation alphaMin(double value);
+    BasicSimulation setAlphaMin(double value);
 
-    double alphaDecay();
+    double getAlphaDecay();
 
-    BasicSimulation alphaDecay(double value);
+    BasicSimulation setAlphaDecay(double value);
 
-    double alphaTarget();
+    double getAlphaTarget();
 
-    BasicSimulation alphaTarget(double value);
+    BasicSimulation setAlphaTarget(double value);
 
-    double velocityDecay();
+    double getVelocityDecay();
 
-    BasicSimulation velocityDecay(double value);
+    BasicSimulation setVelocityDecay(double value);
 
     void clear();
 

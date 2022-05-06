@@ -33,7 +33,7 @@ public class ManyBodyForce extends BaseForce {
     }
 
     public void buildQuadtree() {
-        tree = new Quadtree<>(vertices(), Vertex::x, Vertex::y);
+        tree = new Quadtree<>(vertices(), Vertex::getX, Vertex::getY);
         quads = new HashMap<>();
         tree.visitAfter(this::accumulate);
     }
@@ -51,8 +51,8 @@ public class ManyBodyForce extends BaseForce {
                 QuadData q = quads.get(quad.node);
                 if (q == null || q.value == 0.0) return true;
 
-                double x = q.x - vertex.x();
-                double y = q.y - vertex.y();
+                double x = q.x - vertex.getX();
+                double y = q.y - vertex.getY();
                 double w = quad.x1 - quad.x0;
                 double len = x*x + y*y;
 
@@ -69,8 +69,8 @@ public class ManyBodyForce extends BaseForce {
                             len += y*y;
                         }
                         if (len < distanceMin2) len = Math.sqrt(distanceMin2 * len);
-                        vertex.vx(vertex.vx() + x * q.value * alpha / len);
-                        vertex.vy(vertex.vy() + y * q.value * alpha / len);
+                        vertex.setVX(vertex.getVX() + x * q.value * alpha / len);
+                        vertex.setVY(vertex.getVY() + y * q.value * alpha / len);
                     }
                     return true;
                 }
@@ -95,8 +95,8 @@ public class ManyBodyForce extends BaseForce {
                 do {
                     if (!quad.node.data.equals(vertex)) {
                         double u = strength * alpha / len;
-                        vertex.vx(vertex.vx() + x * u);
-                        vertex.vy(vertex.vy() + y * u);
+                        vertex.setVX(vertex.getVX() + x * u);
+                        vertex.setVY(vertex.getVY() + y * u);
                     }
                     n = n.next;
                 } while (n != null);
@@ -127,7 +127,7 @@ public class ManyBodyForce extends BaseForce {
         } else {
             // For leaf nodes, accumulate forces from coincident quadrants
             Quadtree<Vertex>.Node n = quad.node;
-            quads.put(n, new QuadData(n.data.x(), n.data.y(), 0.0));
+            quads.put(n, new QuadData(n.data.getX(), n.data.getY(), 0.0));
             do {
                 strength += this.strength;
                 n = n.next;

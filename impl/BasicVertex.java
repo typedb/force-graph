@@ -8,8 +8,8 @@ public class BasicVertex implements Vertex {
     public double vx;
     public double vy;
 
-    private final boolean isXFixed;
-    private final boolean isYFixed;
+    private boolean isXFixed;
+    private boolean isYFixed;
 
     public BasicVertex(double x, double y) {
         this(x, y, false, false);
@@ -24,48 +24,62 @@ public class BasicVertex implements Vertex {
     }
 
     @Override
-    public boolean isXFixed() { return isXFixed; }
+    public boolean isXFixed() {
+        return isXFixed;
+    }
 
     @Override
-    public boolean isYFixed() { return isYFixed; }
+    public boolean isYFixed() {
+        return isYFixed;
+    }
 
     @Override
-    public double x() {
+    public void setXFixed(boolean value) {
+        isXFixed = value;
+    }
+
+    @Override
+    public void setYFixed(boolean value) {
+        isYFixed = value;
+    }
+
+    @Override
+    public double getX() {
         return x;
     }
 
     @Override
-    public void x(double value) {
+    public void setX(double value) {
         x = value;
     }
 
     @Override
-    public double y() {
+    public double getY() {
         return y;
     }
 
     @Override
-    public void y(double value) {
+    public void setY(double value) {
         y = value;
     }
 
     @Override
-    public double vx() {
+    public double getVX() {
         return vx;
     }
 
     @Override
-    public void vx(double value) {
+    public void setVX(double value) {
         vx = value;
     }
 
     @Override
-    public double vy() {
+    public double getVY() {
         return vy;
     }
 
     @Override
-    public void vy(double value) {
+    public void setVY(double value) {
         vy = value;
     }
 }

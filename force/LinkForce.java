@@ -11,10 +11,11 @@ import java.util.Random;
 import static com.vaticle.force.graph.util.RandomEffects.jiggle;
 
 public class LinkForce extends BaseForce {
+
     final Collection<Edge> edges;
     final double baseStrength;
     double distance;
-    Map<Vertex, Integer> edgeCounts;
+    Map<Vertex, Integer> vertexOrders;
     Map<Edge, Double> bias;
     Map<Edge, Double> strengths;
     Random random;
@@ -25,24 +26,23 @@ public class LinkForce extends BaseForce {
         this.baseStrength = strength;
         this.distance = distance;
         random = new Random();
-        onGraphChanged();
+        refreshVertexOrders();
     }
 
-    @Override
-    public void onGraphChanged() {
-        edgeCounts = new HashMap<>();
+    public void refreshVertexOrders() {
+        vertexOrders = new HashMap<>();
         bias = new HashMap<>();
         strengths = new HashMap<>();
 
         if (vertices().isEmpty()) return;
 
         for (Edge edge : edges) {
-            edgeCounts.merge(edge.source(), 1, Integer::sum);
-            edgeCounts.merge(edge.target(), 1, Integer::sum);
+            vertexOrders.merge(edge.source(), 1, Integer::sum);
+            vertexOrders.merge(edge.target(), 1, Integer::sum);
         }
         for (Edge edge : edges) {
-            bias.put(edge, (double) edgeCounts.get(edge.source()) / (edgeCounts.get(edge.source()) + edgeCounts.get(edge.target())));
-            strengths.put(edge, baseStrength / Math.min(edgeCounts.get(edge.source()), edgeCounts.get(edge.target())));
+            bias.put(edge, (double) vertexOrders.get(edge.source()) / (vertexOrders.get(edge.source()) + vertexOrders.get(edge.target())));
+            strengths.put(edge, baseStrength / Math.min(vertexOrders.get(edge.source()), vertexOrders.get(edge.target())));
         }
     }
 
@@ -53,20 +53,21 @@ public class LinkForce extends BaseForce {
 
     @Override
     public void apply(Collection<Vertex> vertexPartition, double alpha) {
+        refreshVertexOrders(); // TODO: only refresh if graph has changed since last refresh
         for (Edge edge : edges) {
-            double deltaX = edge.target().x() + edge.target().vx() - edge.source().x() - edge.source().vx();
+            double deltaX = edge.target().getX() + edge.target().getVX() - edge.source().getX() - edge.source().getVX();
             double x = deltaX != 0 ? deltaX : jiggle(random::nextDouble);
-            double deltaY = edge.target().y() + edge.target().vy() - edge.source().y() - edge.source().vy();
+            double deltaY = edge.target().getY() + edge.target().getVY() - edge.source().getY() - edge.source().getVY();
             double y = deltaY != 0 ? deltaY : jiggle(random::nextDouble);
             double length = Math.sqrt(x*x + y*y);
             double l = (length - distance) / length * alpha * strengths.get(edge);
             x *= l; y *= l;
             double targetBias = bias.get(edge);
             double sourceBias = 1 - targetBias;
-            edge.target().vx(edge.target().vx() - x * targetBias);
-            edge.target().vy(edge.target().vy() - y * targetBias);
-            edge.source().vx(edge.source().vx() + x * sourceBias);
-            edge.source().vy(edge.source().vy() + y * sourceBias);
+            edge.target().setVX(edge.target().getVX() - x * targetBias);
+            edge.target().setVY(edge.target().getVY() - y * targetBias);
+            edge.source().setVX(edge.source().getVX() + x * sourceBias);
+            edge.source().setVY(edge.source().getVY() + y * sourceBias);
         }
     }
 }
