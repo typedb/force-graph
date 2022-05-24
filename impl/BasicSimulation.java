@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
@@ -88,7 +90,12 @@ public class BasicSimulation implements Simulation {
         forces.applyAll(alpha);
         localForces.applyAll(alpha);
 
-        for (Vertex vertex : getVertices()) {
+        Collection<Vertex> allVertices = Stream.concat(
+                getVertices().stream(),
+                localForces.forces.stream().flatMap(force -> force.vertices().stream())
+        ).collect(Collectors.toSet());
+
+        for (Vertex vertex : allVertices) {
             if (vertex.isXFixed()) vertex.setVX(0);
             else {
                 vertex.setVX(vertex.getVX() * velocityDecay);

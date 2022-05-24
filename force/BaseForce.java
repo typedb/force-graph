@@ -12,7 +12,7 @@ public abstract class BaseForce implements Force {
         this.vertices = vertices;
     }
 
-    protected Collection<Vertex> vertices() {
+    public Collection<Vertex> vertices() {
         return vertices;
     }
 

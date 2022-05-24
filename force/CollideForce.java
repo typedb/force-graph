@@ -44,6 +44,11 @@ public class CollideForce implements Force {
     }
 
     @Override
+    public Collection<Vertex> vertices() {
+        return vertexList;
+    }
+
+    @Override
     public void apply(double alpha) {
         buildQuadtree();
         apply(vertexList, alpha);
