@@ -23,7 +23,7 @@ workspace(name = "vaticle_force_layout")
 # Load @typedb_dependencies #
 ################################
 
-load("//dependencies/vaticle:repositories.bzl", "typedb_dependencies")
+load("//dependencies/typedb:repositories.bzl", "typedb_dependencies")
 typedb_dependencies()
 
 # Load //builder/bazel for RBE
