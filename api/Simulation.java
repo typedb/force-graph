@@ -1,6 +1,6 @@
-package com.vaticle.force.graph.api;
+package com.typedb.force.graph.api;
 
-import com.vaticle.force.graph.impl.BasicSimulation;
+import com.typedb.force.graph.impl.BasicSimulation;
 
 import java.util.Collection;
 

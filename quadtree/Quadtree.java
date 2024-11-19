@@ -1,4 +1,4 @@
-package com.vaticle.force.graph.quadtree;
+package com.typedb.force.graph.quadtree;
 
 import java.util.Collection;
 import java.util.HashMap;

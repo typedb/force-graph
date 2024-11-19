@@ -1,7 +1,7 @@
-package com.vaticle.force.graph.force;
+package com.typedb.force.graph.force;
 
-import com.vaticle.force.graph.api.Force;
-import com.vaticle.force.graph.api.Vertex;
+import com.typedb.force.graph.api.Force;
+import com.typedb.force.graph.api.Vertex;
 
 import java.util.Collection;
 

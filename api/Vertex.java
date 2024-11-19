@@ -1,4 +1,4 @@
-package com.vaticle.force.graph.api;
+package com.typedb.force.graph.api;
 
 public interface Vertex {
     boolean isXFixed();

@@ -20,7 +20,7 @@
 java_test(
     name = "basic_simulation",
     srcs = ["BasicSimulationBenchmark.java"],
-    test_class = "com.vaticle.force.graph.benchmark.BasicSimulationBenchmark",
+    test_class = "com.typedb.force.graph.benchmark.BasicSimulationBenchmark",
     deps = [
         "//:force_graph",
 

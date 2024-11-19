@@ -17,13 +17,13 @@
  * under the License.
  */
 
-package com.vaticle.force.graph.impl;
+package com.typedb.force.graph.impl;
 
-import com.vaticle.force.graph.api.Vertex;
-import com.vaticle.force.graph.api.Simulation;
-import com.vaticle.force.graph.api.Force;
-import com.vaticle.force.graph.force.CollideForce;
-import com.vaticle.force.graph.force.ManyBodyForce;
+import com.typedb.force.graph.api.Vertex;
+import com.typedb.force.graph.api.Simulation;
+import com.typedb.force.graph.api.Force;
+import com.typedb.force.graph.force.CollideForce;
+import com.typedb.force.graph.force.ManyBodyForce;
 
 import java.util.ArrayList;
 import java.util.Collection;

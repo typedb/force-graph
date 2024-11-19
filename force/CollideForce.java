@@ -1,8 +1,8 @@
-package com.vaticle.force.graph.force;
+package com.typedb.force.graph.force;
 
-import com.vaticle.force.graph.api.Force;
-import com.vaticle.force.graph.api.Vertex;
-import com.vaticle.force.graph.quadtree.Quadtree;
+import com.typedb.force.graph.api.Force;
+import com.typedb.force.graph.api.Vertex;
+import com.typedb.force.graph.quadtree.Quadtree;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.function.Function;
 
-import static com.vaticle.force.graph.util.RandomEffects.jiggle;
+import static com.typedb.force.graph.util.RandomEffects.jiggle;
 
 public class CollideForce implements Force {
     // TODO: just make Force.vertices() be a List<Vertex> so we can extend BaseForce

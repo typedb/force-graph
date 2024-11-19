@@ -13,7 +13,7 @@ Available through https://repo.typedb.com
 </repositories>
 <dependencies>
     <dependency>
-        <groupid>com.vaticle.typedb</groupid>
+        <groupid>com.typedb</groupid>
         <artifactid>typedb-client</artifactid>
         <version>{version}</version>
     </dependency>

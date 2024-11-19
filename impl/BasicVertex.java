@@ -1,6 +1,6 @@
-package com.vaticle.force.graph.impl;
+package com.typedb.force.graph.impl;
 
-import com.vaticle.force.graph.api.Vertex;
+import com.typedb.force.graph.api.Vertex;
 
 public class BasicVertex implements Vertex {
     private double x;

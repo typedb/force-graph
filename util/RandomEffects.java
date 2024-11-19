@@ -1,4 +1,4 @@
-package com.vaticle.force.graph.util;
+package com.typedb.force.graph.util;
 
 import java.util.Random;
 import java.util.function.Supplier;

@@ -30,6 +30,6 @@ java_library(
         "util/*.java",
     ]),
     resources = ["LICENSE"],
-    tags = ["maven_coordinates=com.vaticle:force-graph:{pom_version}"],
+    tags = ["maven_coordinates=com.typedb:force-graph:{pom_version}"],
     deps = [],
 )

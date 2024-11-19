@@ -1,11 +1,11 @@
-package com.vaticle.force.graph.force;
+package com.typedb.force.graph.force;
 
-import com.vaticle.force.graph.api.Vertex;
+import com.typedb.force.graph.api.Vertex;
 
 import java.util.Collection;
 import java.util.function.Supplier;
 
-import static com.vaticle.force.graph.util.StandardFunctions.constant;
+import static com.typedb.force.graph.util.StandardFunctions.constant;
 
 public class YForce extends BaseForce {
     Supplier<Double> y;

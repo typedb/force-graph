@@ -1,14 +1,14 @@
-package com.vaticle.force.graph.benchmark;
+package com.typedb.force.graph.benchmark;
 
-import com.vaticle.force.graph.ForceGraph;
-import com.vaticle.force.graph.api.Edge;
-import com.vaticle.force.graph.api.Simulation;
-import com.vaticle.force.graph.api.Vertex;
-import com.vaticle.force.graph.force.CollideForce;
-import com.vaticle.force.graph.force.LinkForce;
-import com.vaticle.force.graph.force.ManyBodyForce;
-import com.vaticle.force.graph.impl.BasicEdge;
-import com.vaticle.force.graph.impl.BasicVertex;
+import com.typedb.force.graph.ForceGraph;
+import com.typedb.force.graph.api.Edge;
+import com.typedb.force.graph.api.Simulation;
+import com.typedb.force.graph.api.Vertex;
+import com.typedb.force.graph.force.CollideForce;
+import com.typedb.force.graph.force.LinkForce;
+import com.typedb.force.graph.force.ManyBodyForce;
+import com.typedb.force.graph.impl.BasicEdge;
+import com.typedb.force.graph.impl.BasicVertex;
 import org.junit.Test;
 
 import java.time.Duration;
