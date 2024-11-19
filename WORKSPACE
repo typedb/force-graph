@@ -17,7 +17,7 @@
 # under the License.
 #
 
-workspace(name = "vaticle_force_layout")
+workspace(name = "typedb_force_graph")
 
 ################################
 # Load @typedb_dependencies #
@@ -106,19 +106,19 @@ typedb_bazel_distribution_pip()
 ###############
 # Load @maven #
 ###############
-load("//dependencies/maven:artifacts.bzl", vaticle_force_layout_artifacts = "artifacts")
+load("//dependencies/maven:artifacts.bzl", typedb_force_graph_artifacts = "artifacts")
 
 load("@typedb_dependencies//library/maven:rules.bzl", "maven")
 maven(
     typedb_dependencies_tool_maven_artifacts +
-    vaticle_force_layout_artifacts +
+    typedb_force_graph_artifacts +
     typedb_bazel_distribution_maven_artifacts,
 )
 
 ############################################
-# Create @vaticle_force_layout_workspace_refs #
+# Create @typedb_force_graph_workspace_refs #
 ############################################
 load("@typedb_bazel_distribution//common:rules.bzl", "workspace_refs")
 workspace_refs(
-    name = "vaticle_force_layout_workspace_refs"
+    name = "typedb_force_graph_workspace_refs"
 )
