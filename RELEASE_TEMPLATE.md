@@ -1,14 +1,14 @@
-Documentation: http://docs.vaticle.com/docs/client-api/java
+Documentation: http://docs.typedb.com/docs/client-api/java
 
 ## Distribution
 
-Available through https://repo.vaticle.com
+Available through https://repo.typedb.com
 
 ```xml
 <repositories>
     <repository>
-        <id>repo.vaticle.com</id>
-        <url>https://repo.vaticle.com/repository/maven/</url>
+        <id>repo.typedb.com</id>
+        <url>https://repo.typedb.com/repository/maven/</url>
     </repository>
 </repositories>
 <dependencies>
